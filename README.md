@@ -1,55 +1,33 @@
 **This is not an officially supported Google product.**
 
-# New Project Template
+# On-device ML for browsers of the future
+chowdhery@, mcrouse@, ryansturm@
+Last updated: June 11, 2020
 
-This repository contains a template that can be used to seed a repository for a
-new Google open source project.
+# Motivation
+The competitiveness of browsers in future will be determined by empowering the user to control their data’s privacy while being optimized for lightening fast user-interactions. AI has enabled web applications to offer several new features, for example text suggestions (SmartCompose) or recommending the next video to watch (YouTube WatchNext). ML models require user data to train accurate models which directly conflicts with empowering users’ privacy. 
+On-device ML enables new paradigm empowering users to control their privacy because the user data never leaves their device and the deployed models may be personalized if the user would like to. So far Google has seen successful deployment of on-device ML models in a wide-range of applications, including Nest, Assistant, Gmail, and Youtube. 
+In this intern project, we investigate the regime in which on-device ML models can be successfully deployed in Chrome to enable new capabilities & features. Mobile browsers introduce additional systems challenges related to memory and/or latency constraints that require investigation for on-device ML models to perform well.
 
-See [go/releasing](http://go/releasing) (available externally at
-https://opensource.google/docs/releasing/) for more information about
-releasing a new Google open source project.
+# New applications
+## Chrome Browsing History and Bookmarks 
+Chrome History is a store of every website visited by the user (see chrome://history). Bookmarks are websites that the user explicitly tags as important to persist (see chrome://bookmarks). Both these information sources are limited in the information they maintain, primarily the URL and the webpage title. This project would focus on improving the organization and indexing of these stores by creating additional metadata for each entry Chrome Browser History and Bookmarks. Currently, the Chrome History page is organized only chronologically and search queries are exact text matches on the title of the page. The metadata would allow the history page to be shown with additional preset filterings based on the ML created metadata, such as page category (news, media, search, etc.). The second use is for improved querying that would allow matching of text beyond the title of the webpage. This index would be built using summarization of the full text of the website. 
 
-This template uses the Apache license, as is Google's default.  See the
-documentation for instructions on using alternate license.
+The added benefit of Machine Learning-created metadata for these data stores is their potential use beyond just Bookmarks and History. For example, the improved metadata can also be consumed by the omnibox. On mobile platforms, this is an extremely high impact surface and improving the accuracy and efficacy of this surface could provide a tremendous long term impact for Chrome. This model could also be integrated into improving the ads targeting for individual navigations, potentially putting model inference in a critical rendering path. 
 
-## How to use this template
+## Text Suggestions
+Text auto completion or suggestion is becoming an important part of content creation on the web. Creating content, such as posting to twitter or writing a caption on Instagram have become increasingly important on the web. Several of Google’s first party applications include text suggestions as core parts of their UI, including Gmail and GSuite. However, users on mobile devices create content on the web in Chrome in a wide variety of web applications. Text suggestion and autocompletion, particularly on Android, could improve users’ experience creating content on the open web that more closely matches the experience on their own application (e.g., the Instagram app directly vs their web app). 
 
-1. Check it out from GitHub.
-    * There is no reason to fork it.
-1. Create a new local repository and copy the files from this repo into it.
-1. Modify README.md and docs/contributing.md to represent your project, not the
-   template project.
-1. Develop your new project!
+## Enhanced Spellcheck
+There are currently two categories of spellcheck, dictionary or model-based. The dictionary approach is entirely local, therefore, privacy preserving to the user. The model approach relies on a cloud service but sacrifices user privacy as each keystroke must be transmitted to Google. An on-device model would be a potentially large upgrade over dictionary-based spell checking without sacrificing user privacy. This likely would be mostly targeted at Desktop as content creation on Chrome mobile is less common.
 
-``` shell
-git clone https://github.com/google/new-project
-mkdir my-new-thing
-cd my-new-thing
-git init
-cp -r ../new-project/* ../new-project/.github .
-git add *
-git commit -a -m 'Boilerplate for new Google open source project'
-```
+# Systems Challenges
+On-device ML models to be deployed in mobile browser can be categorized as follows:
+Memory constrained & large latency budget: for example organizing chrome bookmark/history/tabs 
+Memory constrained & small latency budget: run in real-time with user interaction, for example text suggestions, voice search, stylus writing recognition (OCR), or gaze tracking. Such models may be run in a background process and are likely to be useful if they keep with the pace of user-interaction.
+Latency critical & memory constrained:, for example on-device auction model for ads targeting (or translating website to another language). Such models will run in the critical path of rendering the webpage while ensuring user’s privacy and thus require the model to run with very low latency as well as memory footprint.
 
-## Source Code Headers
+Chrome’s system design has shifted to a service-based architecture, that is each major component of Chrome (browser UI, renderers, networking, etc.), are in isolated processes rather than a monolithic single process approach. This provides stability and security as it isolates vulnerable bits of code. For example, the renderer is isolated so it can parse arbitrary strings from the web without having direct access to the network or disk. If the renderer crashes or the parser creates an exploitable buffer overflow, it remains isolated from the other processes. To enable machine learning for Chrome, we need to understand how it fits within this service-oriented architecture and how to manage the constraints given the memory and latency constraints of the machine learning applications. For example, we need to ensure the memory and computation requirements for a text suggestion model being frequently executed can both meet the user latency requirements and not overwhelm the other critical processes. 
 
-Every file containing source code must include copyright and license
-information. This includes any JS/CSS files that you might be serving out to
-browsers. (This is to help well-intentioned people avoid accidental copying that
-doesn't comply with the license.)
+The machine learning service within Chrome will follow the design pattern and be placed in a separate, sandboxed process. Any model that will need to be executed will be initialized and executed within the environment. For another process (e.g., the renderer when working with text input for text suggestions), it will need to send Mojo messages to the learning service for the created model to be evaluated and the result returned. This project will explore how a sandboxed, machine learning service running in a separate process impacts models in each of the three categories listed above and what approaches can be taken to overcome them.
 
-Apache header:
-
-    Copyright 2020 Google LLC
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        https://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
