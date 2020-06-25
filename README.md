@@ -9,15 +9,4 @@ The competitiveness of browsers in future will be determined by empowering the u
 On-device ML enables new paradigm empowering users to control their privacy because the user data never leaves their device and the deployed models may be personalized if the user would like to. So far Google has seen successful deployment of on-device ML models in a wide-range of applications, including Nest, Assistant, Gmail, and Youtube. 
 In this intern project, we investigate the regime in which on-device ML models can be successfully deployed in Chrome to enable new capabilities & features. Mobile browsers introduce additional systems challenges related to memory and/or latency constraints that require investigation for on-device ML models to perform well.
 
-# New applications
-## Impoved Browsing History and Bookmarks 
-## Text Suggestions
-## Enhanced Spellcheck
-
-# Systems Challenges
-
-Modern browsers are complex and contain many critical processes that contend for
-resources. The introduction of a ML service must fit within the available
-resources and meet the constaints of the application to be successful. This
-project explores those trade-offs.
 
