@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
 					// Show classification result on screen
 					showResult(text, results);
 				});
+
 	}
 
 	/** Show classification result on the screen. */
