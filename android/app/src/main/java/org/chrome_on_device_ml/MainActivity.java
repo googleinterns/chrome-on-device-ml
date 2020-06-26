@@ -16,6 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
+import android.widget.TextView;
+
 import org.chrome_on_device_ml.MobileBertClassification.Result;
 
 import java.util.List;
@@ -27,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
 	private EditText inputEditText;
 	private Button classifyButton;
 	private Handler handler;
-
-//    private handler
+	private TextView resultTextView;
+	private ScrollView scrollView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
 						(View v) -> {
 							classify(inputEditText.getText().toString());
 						});
+		scrollView = findViewById(R.id.scroll_view);
+		resultTextView = findViewById(R.id.result_text_view);
 	}
 
 	@Override
@@ -120,14 +125,14 @@ public class MainActivity extends AppCompatActivity {
 							textToShow += "---------\n";
 
 							// Append the result to the UI.
-//							resultTextView.append(textToShow);
-							Log.v(TAG, textToShow);
+							resultTextView.append(textToShow);
+//							Log.v(TAG, textToShow);
 
 							// Clear the input text.
 							inputEditText.getText().clear();
 
 							// Scroll to the bottom to show latest entry's classification result.
-//							scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+							scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
 						});
 	}
 }
