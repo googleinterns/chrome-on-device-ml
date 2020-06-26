@@ -9,7 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-package org.chrome_on_device_ml.experiments;
+package org.chrome.device.ml.experiments;
 
 import android.content.Context;
 import android.os.Handler;
@@ -18,13 +18,15 @@ import android.os.Message;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.chrome_on_device_ml.ml.LoadDatasetClient;
-import org.chrome_on_device_ml.ml.QaAnswer;
-import org.chrome_on_device_ml.ml.QaClient;
+import org.chrome.device.ml.ml.LoadDatasetClient;
+import org.chrome.device.ml.ml.QaAnswer;
+import org.chrome.device.ml.ml.QaClient;
 
 /** Bert model question/answer experiment */
-public class BertExperiment{
-  private static final String TAG = "CDML_MobileBert";
+public class BertExperiment implements Experiment {
+  private static final String TAG = "CDML_Bert";
+  private static final String MODEL_PATH = "bert_model.tflite";
+
   private final Context context;
   private Handler handler;
   private Handler activityHandler;
@@ -43,7 +45,7 @@ public class BertExperiment{
     handlerThread.start();
 
     this.handler = new Handler(handlerThread.getLooper());
-    this.qaClient = new QaClient(this.context);
+    this.qaClient = new QaClient(this.context, MODEL_PATH);
     this.timing = new ArrayList<Double>();
   }
 
@@ -91,6 +93,7 @@ public class BertExperiment{
             timing.add(contentTime);
           }
         }
+
         // Send message to UI thread
         Message doneMsg = new Message();
         doneMsg.what = 0;

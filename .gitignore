@@ -7,8 +7,13 @@ android/build
 android/captures
 .externalNativeBuild
 .cxx
+
 android/app/build
 
 .DS_Store
 *.log
 *.tar.gz
+
+#python
+__pycache__
+*.pyc

@@ -9,7 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-package org.chrome_on_device_ml.ml;
+package org.chrome.device.ml.ml;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -35,7 +35,6 @@ import org.tensorflow.lite.Interpreter;
 /** Interface to load TfLite model and provide predictions. */
 public class QaClient implements AutoCloseable {
   private static final String TAG = "CDML_QaClient";
-  private static final String MODEL_PATH = "bert_model.tflite";
   private static final String DIC_PATH = "bert_vocab.txt";
 
   private static final int MAX_ANS_LEN = 32;
@@ -49,6 +48,7 @@ public class QaClient implements AutoCloseable {
   // Need to shift 1 for outputs ([CLS]).
   private static final int OUTPUT_OFFSET = 1;
 
+  private String modelPath;
   private final Context context;
   private final Map<String, Integer> dic = new HashMap<>();
   private final FeatureConverter featureConverter;
@@ -56,7 +56,8 @@ public class QaClient implements AutoCloseable {
 
   private static final Joiner SPACE_JOINER = Joiner.on(" ");
 
-  public QaClient(Context context) {
+  public QaClient(Context context, String model) {
+    this.modelPath = model;
     this.context = context;
     this.featureConverter = new FeatureConverter(dic, DO_LOWER_CASE, MAX_QUERY_LEN, MAX_SEQ_LEN);
   }
@@ -98,7 +99,7 @@ public class QaClient implements AutoCloseable {
 
   /** Load tflite model from assets. */
   public MappedByteBuffer loadModelFile(AssetManager assetManager) throws IOException {
-    try (AssetFileDescriptor fileDescriptor = assetManager.openFd(MODEL_PATH);
+    try (AssetFileDescriptor fileDescriptor = assetManager.openFd(this.modelPath);
          FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor())) {
       FileChannel fileChannel = inputStream.getChannel();
       long startOffset = fileDescriptor.getStartOffset();
