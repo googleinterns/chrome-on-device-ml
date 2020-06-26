@@ -8,6 +8,7 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.View;
 
 import android.view.Menu;
@@ -16,8 +17,10 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "ChromeOnDeviceML";
     private EditText inputEditText;
     private Button classifyButton;
+//    private handler
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
 
         inputEditText = findViewById(R.id.input_text);
         classifyButton = findViewById(R.id.button);
+        classifyButton.setOnClickListener(
+            (View v) -> {
+                classify("test");
+            });
     }
 
     @Override
@@ -50,5 +57,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /** Send input text to TextClassificationClass and show the classify messages **/
+    private void classify(final String text) {
+        Log.d(TAG, "classify run");
     }
 }
