@@ -12,8 +12,12 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
+    private EditText inputEditText;
+    private Button classifyButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        inputEditText = findViewById(R.id.input_text);
+        classifyButton = findViewById(R.id.button);
     }
 
     @Override
