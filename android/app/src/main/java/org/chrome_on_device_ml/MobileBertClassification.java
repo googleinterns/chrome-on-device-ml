@@ -127,12 +127,18 @@ public class MobileBertClassification {
 	@WorkerThread
 	private synchronized void loadModel() {
 		try {
-			AssetManager test = this.context.getAssets();
-			Log.v(TAG, test.toString());
+//			AssetManager test = this.context.getAssets();
+//			Log.v(TAG, test.toString());
+//
+//			String[] assetsIWant = test.list("assets");
+//
+//			for(String asset: assetsIWant) {
+//				Log.v(TAG, asset.toString());
+//			}
 
-//			ByteBuffer buffer = loadModelFile(this.context.getAssets());
-//			tflite = new Interpreter(buffer);
-//			Log.v(TAG, "TFLite model loaded.");
+			ByteBuffer buffer = loadModelFile(this.context.getAssets());
+			tflite = new Interpreter(buffer);
+			Log.v(TAG, "TFLite model loaded.");
 		} catch (IOException ex) {
 			Log.e(TAG, ex.getMessage());
 		}
