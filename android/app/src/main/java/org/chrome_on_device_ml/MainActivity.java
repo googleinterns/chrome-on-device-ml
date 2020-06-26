@@ -16,8 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
-import org.chrome_on_device_ml.MobileBertClassification;
+import org.chrome_on_device_ml.MobileBertClassification.Result;
 
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 	private static final String TAG = "ChromeOnDeviceML";
@@ -45,9 +46,8 @@ public class MainActivity extends AppCompatActivity {
 		classifyButton = findViewById(R.id.button);
 		classifyButton.setOnClickListener(
 						(View v) -> {
-							classify("test");
+							classify(inputEditText.getText().toString());
 						});
-
 	}
 
 	@Override
@@ -95,5 +95,39 @@ public class MainActivity extends AppCompatActivity {
 	/** Send input text to TextClassificationClass and show the classify messages **/
 	private void classify(final String text) {
 		Log.d(TAG, "classify run");
+
+		handler.post(
+				() -> {
+					// Run text classification with TF Lite.
+					List<Result> results = client.classify(text);
+
+					// Show classification result on screen
+					showResult(text, results);
+				});
+	}
+
+	/** Show classification result on the screen. */
+	private void showResult(final String inputText, final List<Result> results) {
+		// Run on UI thread as we'll updating our app UI
+		runOnUiThread(
+						() -> {
+							String textToShow = "Input: " + inputText + "\nOutput:\n";
+							for (int i = 0; i < results.size(); i++) {
+								Result result = results.get(i);
+								textToShow +=
+												String.format("    %s: %s\n", result.getTitle(), result.getConfidence());
+							}
+							textToShow += "---------\n";
+
+							// Append the result to the UI.
+//							resultTextView.append(textToShow);
+							Log.v(TAG, textToShow);
+
+							// Clear the input text.
+							inputEditText.getText().clear();
+
+							// Scroll to the bottom to show latest entry's classification result.
+//							scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+						});
 	}
 }

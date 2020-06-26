@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 import org.tensorflow.lite.Interpreter;
 
@@ -29,14 +30,78 @@ public class MobileBertClassification {
 	private static final String DIC_PATH = "text_classification_vocab.txt";
 	private static final String LABEL_PATH = "text_classification_labels.txt";
 
+	private static final int SENTENCE_LEN = 256;  // The maximum length of an input sentence.
+	// Simple delimiter to split words.
+	private static final String SIMPLE_SPACE_OR_PUNCTUATION = " |\\,|\\.|\\!|\\?|\n";
+	/*
+	 * Reserved values in ImdbDataSet dic:
+	 * dic["<PAD>"] = 0      used for padding
+	 * dic["<START>"] = 1    mark for the start of a sentence
+	 * dic["<UNKNOWN>"] = 2  mark for unknown words (OOV)
+	 */
+	private static final String START = "<START>";
+	private static final String PAD = "<PAD>";
+	private static final String UNKNOWN = "<UNKNOWN>";
+
+	/** Number of results to show in the UI. */
+	private static final int MAX_RESULTS = 3;
+
 	private final Context context;
 	private final Map<String, Integer> dic = new HashMap<>();
 	private final List<String> labels = new ArrayList<>();
 	private Interpreter tflite;
 
-	public static class Result  {
+	/** An immutable result returned by a TextClassifier describing what was classified. */
+	public static class Result {
+		/**
+		 * A unique identifier for what has been classified. Specific to the class, not the instance of
+		 * the object.
+		 */
+		private final String id;
 
+		/** Display name for the result. */
+		private final String title;
+
+		/** A sortable score for how good the result is relative to others. Higher should be better. */
+		private final Float confidence;
+
+		public Result(final String id, final String title, final Float confidence) {
+			this.id = id;
+			this.title = title;
+			this.confidence = confidence;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public Float getConfidence() {
+			return confidence;
+		}
+
+		@Override
+		public String toString() {
+			String resultString = "";
+			if (id != null) {
+				resultString += "[" + id + "] ";
+			}
+
+			if (title != null) {
+				resultString += title + " ";
+			}
+
+			if (confidence != null) {
+				resultString += String.format("(%.1f%%) ", confidence * 100.0f);
+			}
+
+			return resultString.trim();
+		}
 	}
+	;
 
 	public MobileBertClassification(Context context) {
 		this.context = context;
@@ -92,6 +157,33 @@ public class MobileBertClassification {
 		}
 	}
 
+	/** Classify an input string and returns the classification results. */
+	@WorkerThread
+	public synchronized List<Result> classify(String text) {
+		// Pre-prosessing.
+		float[][] input = tokenizeInputText(text);
+
+		// Run inference.
+		Log.v(TAG, "Classifying text with TF Lite...");
+		float[][] output = new float[1][labels.size()];
+		tflite.run(input, output);
+
+		// Find the best classifications.
+		PriorityQueue<Result> pq =
+						new PriorityQueue<>(
+										MAX_RESULTS, (lhs, rhs) -> Float.compare(rhs.getConfidence(), lhs.getConfidence()));
+		for (int i = 0; i < labels.size(); i++) {
+			pq.add(new Result("" + i, labels.get(i), output[0][i]));
+		}
+		final ArrayList<Result> results = new ArrayList<>();
+		while (!pq.isEmpty()) {
+			results.add(pq.poll());
+		}
+
+		// Return the probability of each class.
+		return results;
+	}
+
 	/** Load TF Lite model from assets. */
 	private static MappedByteBuffer loadModelFile(AssetManager assetManager) throws IOException {
 		try (AssetFileDescriptor fileDescriptor = assetManager.openFd(MODEL_PATH);
@@ -129,4 +221,28 @@ public class MobileBertClassification {
 			}
 		}
 	}
+
+	/** Pre-prosessing: tokenize and map the input words into a float array. */
+	float[][] tokenizeInputText(String text) {
+		float[] tmp = new float[SENTENCE_LEN];
+		List<String> array = Arrays.asList(text.split(SIMPLE_SPACE_OR_PUNCTUATION));
+
+		int index = 0;
+		// Prepend <START> if it is in vocabulary file.
+		if (dic.containsKey(START)) {
+			tmp[index++] = dic.get(START);
+		}
+
+		for (String word : array) {
+			if (index >= SENTENCE_LEN) {
+				break;
+			}
+			tmp[index++] = dic.containsKey(word) ? dic.get(word) : (int) dic.get(UNKNOWN);
+		}
+		// Padding and wrapping.
+		Arrays.fill(tmp, index, SENTENCE_LEN - 1, (int) dic.get(PAD));
+		float[][] ans = {tmp};
+		return ans;
+	}
+
 }
