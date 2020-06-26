@@ -25,7 +25,7 @@ import java.util.PriorityQueue;
 import org.tensorflow.lite.Interpreter;
 
 public class MobileBertClassification {
-	private static final String TAG = "TextClassificationDemo";
+	private static final String TAG = "MobileBertClassificationDemo";
 	private static final String MODEL_PATH = "text_classification.tflite";
 	private static final String DIC_PATH = "text_classification_vocab.txt";
 	private static final String LABEL_PATH = "text_classification_labels.txt";
@@ -165,6 +165,7 @@ public class MobileBertClassification {
 
 		// Run inference.
 		Log.v(TAG, "Classifying text with TF Lite...");
+		Log.v(TAG, "text: " + text);
 		float[][] output = new float[1][labels.size()];
 		tflite.run(input, output);
 
