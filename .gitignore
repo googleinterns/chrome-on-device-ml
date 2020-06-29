@@ -1,3 +1,4 @@
+#android
 *.iml
 .gradle
 android/local.properties
@@ -12,4 +13,6 @@ android/captures
 .externalNativeBuild
 .cxx
 android/app/build
+
 .DS_Store
+*.log
