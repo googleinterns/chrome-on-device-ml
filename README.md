@@ -2,9 +2,9 @@
 
 # On-device ML for browsers of the future
 chowdhery@, mcrouse@, ryansturm@, <add name here>
-Last updated: June 25, 2020
+Last updated: June 29, 2020
 
-# Motivation
+## Motivation
 The competitiveness of browsers in future will be determined by empowering the
 user to control their data’s privacy while being optimized for lightening fast
 user-interactions. AI has enabled web applications to offer several new
