@@ -1,12 +1,21 @@
-package org.chrome_on_device_ml;
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+package org.chrome_on_device_ml.ml;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.util.Log;
-
 import androidx.annotation.WorkerThread;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,13 +31,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import org.chrome_on_device_ml.tokenization.FullTokenizer;
 import org.tensorflow.lite.Interpreter;
 
-public class MobileBertClassification {
-	private static final String TAG = "MobileBertClassificationDemo";
+public class TextClassification {
+	private static final String TAG = "CDML_TextClassification";
 	private static final String MODEL_PATH = "text_classification.tflite";
 	private static final String DIC_PATH = "text_classification_vocab.txt";
 	private static final String LABEL_PATH = "text_classification_labels.txt";
+
+	private static final boolean DO_LOWER_CASE = true;
 
 	private static final int SENTENCE_LEN = 256;  // The maximum length of an input sentence.
 	// Simple delimiter to split words.
@@ -50,6 +62,7 @@ public class MobileBertClassification {
 	private final Map<String, Integer> dic = new HashMap<>();
 	private final List<String> labels = new ArrayList<>();
 	private Interpreter tflite;
+	private FullTokenizer tokenizer;
 
 	/** An immutable result returned by a TextClassifier describing what was classified. */
 	public static class Result {
@@ -103,8 +116,9 @@ public class MobileBertClassification {
 	}
 	;
 
-	public MobileBertClassification(Context context) {
+	public TextClassification(Context context) {
 		this.context = context;
+		this.tokenizer = new FullTokenizer(dic, DO_LOWER_CASE);
 	}
 
 	/** Load the TF Lite model and dictionary so that the client can start classifying text. */
@@ -127,15 +141,6 @@ public class MobileBertClassification {
 	@WorkerThread
 	private synchronized void loadModel() {
 		try {
-//			AssetManager test = this.context.getAssets();
-//			Log.v(TAG, test.toString());
-//
-//			String[] assetsIWant = test.list("assets");
-//
-//			for(String asset: assetsIWant) {
-//				Log.v(TAG, asset.toString());
-//			}
-
 			ByteBuffer buffer = loadModelFile(this.context.getAssets());
 			tflite = new Interpreter(buffer);
 			Log.v(TAG, "TFLite model loaded.");
@@ -171,6 +176,10 @@ public class MobileBertClassification {
 	public synchronized List<Result> classify(String text) {
 		// Pre-prosessing.
 		float[][] input = tokenizeInputText(text);
+		List<String> test = tokenizer.tokenize((text));
+		for(String item: test) {
+			Log.v(TAG, item.toString());
+		}
 
 		// Run inference.
 		Log.v(TAG, "Classifying text with TF Lite...");
