@@ -16,3 +16,4 @@ android/app/build
 
 .DS_Store
 *.log
+*.tar.gz
