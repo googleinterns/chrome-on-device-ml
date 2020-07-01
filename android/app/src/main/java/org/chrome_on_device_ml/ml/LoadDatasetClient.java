@@ -28,82 +28,82 @@ import java.util.Map;
  * for autoCompleteTextView.
  */
 public class LoadDatasetClient {
-	private static final String TAG = "CDML_LoadDatasetClient";
-	private static final String JSON_DIR = "bert_qa.json";
-	private static final String DIC_DIR = "bert_vocab.txt";
-	private final Context context;
+  private static final String TAG = "CDML_LoadDatasetClient";
+  private static final String JSON_DIR = "bert_qa.json";
+  private static final String DIC_DIR = "bert_vocab.txt";
+  private final Context context;
 
-	private String[] contents;
-	private String[] titles;
-	private String[][] questions;
-	private int contentLength;
+  private String[] contents;
+  private String[] titles;
+  private String[][] questions;
+  private int contentLength;
 
-	public LoadDatasetClient(Context context) {
-		this.context = context;
-		loadJson();
-	}
+  public LoadDatasetClient(Context context) {
+    this.context = context;
+    loadJson();
+  }
 
-	private void loadJson() {
-		try {
-			InputStream is = context.getAssets().open(JSON_DIR);
-			JsonReader reader = new JsonReader(new InputStreamReader(is));
-			HashMap<String, List<List<String>>> map = new Gson().fromJson(reader, HashMap.class);
-			List<List<String>> jsonTitles = map.get("titles");
-			List<List<String>> jsonContents = map.get("contents");
-			List<List<String>> jsonQuestions = map.get("questions");
+  private void loadJson() {
+    try {
+      InputStream is = context.getAssets().open(JSON_DIR);
+      JsonReader reader = new JsonReader(new InputStreamReader(is));
+      HashMap<String, List<List<String>>> map = new Gson().fromJson(reader, HashMap.class);
+      List<List<String>> jsonTitles = map.get("titles");
+      List<List<String>> jsonContents = map.get("contents");
+      List<List<String>> jsonQuestions = map.get("questions");
 
-			titles = listToArray(jsonTitles);
-			contents = listToArray(jsonContents);
+      titles = listToArray(jsonTitles);
+      contents = listToArray(jsonContents);
 
-			questions = new String[jsonQuestions.size()][];
-			int index = 0;
-			for (List<String> item : jsonQuestions) {
-				questions[index++] = item.toArray(new String[item.size()]);
-			}
-			contentLength = index;
+      questions = new String[jsonQuestions.size()][];
+      int index = 0;
+      for (List<String> item : jsonQuestions) {
+        questions[index++] = item.toArray(new String[item.size()]);
+      }
+      contentLength = index;
 
-		} catch (IOException ex) {
-			Log.e(TAG, ex.toString());
-		}
-	}
+    } catch (IOException ex) {
+      Log.e(TAG, ex.toString());
+    }
+  }
 
-	private static String[] listToArray(List<List<String>> list) {
-		String[] answer = new String[list.size()];
-		int index = 0;
-		for (List<String> item : list) {
-			answer[index++] = item.get(0);
-		}
-		return answer;
-	}
+  private static String[] listToArray(List<List<String>> list) {
+    String[] answer = new String[list.size()];
+    int index = 0;
+    for (List<String> item : list) {
+      answer[index++] = item.get(0);
+    }
+    return answer;
+  }
 
-	public String[] getTitles() {
-		return titles;
-	}
+  public String[] getTitles() {
+    return titles;
+  }
 
-	public String getContent(int index) {
-		return contents[index];
-	}
+  public String getContent(int index) {
+    return contents[index];
+  }
 
-	public int getNumberOfContents() {
-		return contentLength;
-	}
+  public int getNumberOfContents() {
+    return contentLength;
+  }
 
-	public String[] getQuestions(int index) {
-		return questions[index];
-	}
+  public String[] getQuestions(int index) {
+    return questions[index];
+  }
 
-	public Map<String, Integer> loadDictionary() {
-		Map<String, Integer> dic = new HashMap<>();
-		try (InputStream ins = context.getAssets().open(DIC_DIR);
-				 BufferedReader reader = new BufferedReader(new InputStreamReader(ins))) {
-			int index = 0;
-			while (reader.ready()) {
-				String key = reader.readLine();
-				dic.put(key, index++);
-			}
-		} catch (IOException ex) {
-			Log.e(TAG, ex.getMessage());
-		}
-		return dic;
-	}
+  public Map<String, Integer> loadDictionary() {
+    Map<String, Integer> dic = new HashMap<>();
+    try (InputStream ins = context.getAssets().open(DIC_DIR);
+         BufferedReader reader = new BufferedReader(new InputStreamReader(ins))) {
+      int index = 0;
+      while (reader.ready()) {
+        String key = reader.readLine();
+        dic.put(key, index++);
+      }
+    } catch (IOException ex) {
+      Log.e(TAG, ex.getMessage());
+    }
+    return dic;
+  }
 }
