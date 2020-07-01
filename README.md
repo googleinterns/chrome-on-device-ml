@@ -1,7 +1,7 @@
 **This is not an officially supported Google product.**
 
 # On-device ML for browsers of the future
-chowdhery@, mcrouse@, ryansturm@, mehrdadh@
+chowdhery@, mcrouse@, ryansturm@, mehrdadh@,
 Last updated: July 1, 2020
 
 # Motivation
