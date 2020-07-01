@@ -4,7 +4,7 @@
 chowdhery@, mcrouse@, ryansturm@, mehrdadh@,
 Last updated: July 1, 2020
 
-# Motivation
+## Motivation
 The competitiveness of browsers in future will be determined by empowering the
 user to control their data’s privacy while being optimized for lightening fast
 user-interactions. AI has enabled web applications to offer several new

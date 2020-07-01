@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -68,15 +68,20 @@ public class BertExperiment{
     handler.post(
       () -> {
         for (int i = 0; i < contentsRun; i++) {
+          /** fetch a content. */
           final String content = datasetClient.getContent(i);
           String[] question_set = datasetClient.getQuestions(i);
 
           for (int j = 0; j < question_set.length; j++) {
+            /** fetch a question. */
             String question = question_set[j];
 
+            /** Add question mark to match with the dataset. */
             if (!question.endsWith("?")) {
               question += '?';
             }
+
+            /** Run model and store timing. */
             final String questionToAsk = question;
             long beforeTime = System.currentTimeMillis();
             final List<QaAnswer> answers = qaClient.predict(questionToAsk, content);
@@ -85,6 +90,7 @@ public class BertExperiment{
             timing.add(contentTime);
           }
         }
+        /** Send message to UI thread. */
         Message doneMsg = new Message();
         doneMsg.what = 0;
         doneMsg.obj = "Evaluation Finished";
