@@ -23,81 +23,81 @@ import org.chrome_on_device_ml.ml.QaAnswer;
 import org.chrome_on_device_ml.ml.QaClient;
 
 public class BertExperiment{
-	private static final String TAG = "CDML_MobileBert";
-	private final Context context;
-	private Handler handler;
-	private Handler UIHandler;
+  private static final String TAG = "CDML_MobileBert";
+  private final Context context;
+  private Handler handler;
+  private Handler UIHandler;
 
-	private LoadDatasetClient datasetClient;
-	private QaClient qaClient;
-	private ArrayList<Double> timing;
+  private LoadDatasetClient datasetClient;
+  private QaClient qaClient;
+  private ArrayList<Double> timing;
 
-	public BertExperiment(Context context, Handler handler) {
-		this.context = context;
-		this.UIHandler = handler;
+  public BertExperiment(Context context, Handler handler) {
+    this.context = context;
+    this.UIHandler = handler;
 
-		this.datasetClient = new LoadDatasetClient(this.context);
+    this.datasetClient = new LoadDatasetClient(this.context);
 
-		HandlerThread handlerThread = new HandlerThread("BertExp");
-		handlerThread.start();
+    HandlerThread handlerThread = new HandlerThread("BertExp");
+    handlerThread.start();
 
-		this.handler = new Handler(handlerThread.getLooper());
-		this.qaClient = new QaClient(this.context);
-		this.timing = new ArrayList<Double>();
-	}
+    this.handler = new Handler(handlerThread.getLooper());
+    this.qaClient = new QaClient(this.context);
+    this.timing = new ArrayList<Double>();
+  }
 
-	public void initialize() {
-		handler.post(
-			() -> {
-				qaClient.loadModel();
-				qaClient.loadDictionary();
-			});
-	}
+  public void initialize() {
+    handler.post(
+      () -> {
+        qaClient.loadModel();
+        qaClient.loadDictionary();
+      });
+  }
 
-	public void close() {
-		handler.post(
-		() -> {
-			qaClient.close();
-		});
-	}
+  public void close() {
+    handler.post(
+      () -> {
+        qaClient.close();
+      });
+  }
 
-	/** Evaluates Bert model with contents and questions. */
-	public void evaluate(int numberOfContents) {
-		timing.clear();
-		int contentsRun = Math.min(numberOfContents, datasetClient.getNumberOfContents());
-		handler.post(
-			() -> {
-				for (int i = 0; i < contentsRun; i++) {
-					final String content = datasetClient.getContent(i);
-					String[] question_set = datasetClient.getQuestions(i);
+  /** Evaluates Bert model with contents and questions. */
+  public void evaluate(int numberOfContents) {
+    timing.clear();
+    int contentsRun = Math.min(numberOfContents, datasetClient.getNumberOfContents());
+    handler.post(
+      () -> {
+        for (int i = 0; i < contentsRun; i++) {
+          final String content = datasetClient.getContent(i);
+          String[] question_set = datasetClient.getQuestions(i);
 
-					for (int j = 0; j < question_set.length; j++) {
-						String question = question_set[j];
+          for (int j = 0; j < question_set.length; j++) {
+            String question = question_set[j];
 
-						if (!question.endsWith("?")) {
-							question += '?';
-						}
-						final String questionToAsk = question;
-						long beforeTime = System.currentTimeMillis();
-						final List<QaAnswer> answers = qaClient.predict(questionToAsk, content);
-						long afterTime = System.currentTimeMillis();
-						Double contentTime = new Double((afterTime - beforeTime) / 1000.0);
-						timing.add(contentTime);
-					}
-				}
-				Message doneMsg = new Message();
-				doneMsg.what = 0;
-				doneMsg.obj = "Evaluation Finished";
-				this.UIHandler.sendMessage(new Message());
-			}
-		);
-	}
+            if (!question.endsWith("?")) {
+              question += '?';
+            }
+            final String questionToAsk = question;
+            long beforeTime = System.currentTimeMillis();
+            final List<QaAnswer> answers = qaClient.predict(questionToAsk, content);
+            long afterTime = System.currentTimeMillis();
+            Double contentTime = new Double((afterTime - beforeTime) / 1000.0);
+            timing.add(contentTime);
+          }
+        }
+        Message doneMsg = new Message();
+        doneMsg.what = 0;
+        doneMsg.obj = "Evaluation Finished";
+        this.UIHandler.sendMessage(new Message());
+      }
+    );
+  }
 
-	public double getTime() {
-		double time = 0;
-		for (Double item : timing) {
-			time += item;
-		}
-		return time/timing.size();
-	}
+  public double getTime() {
+    double time = 0;
+    for (Double item : timing) {
+      time += item;
+    }
+    return time/timing.size();
+  }
 }
