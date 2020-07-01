@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
@@ -38,9 +39,8 @@ public class ChromeActivity extends AppCompatActivity {
 	private EditText inputEditText;
 	private Button classifyButton;
 	private Handler handler;
-	private TextView resultTextView;
+	public TextView resultTextView;
 	private ScrollView scrollView;
-
 	private BertExperiment bert;
 
 	@Override
@@ -53,39 +53,35 @@ public class ChromeActivity extends AppCompatActivity {
 		setSupportActionBar(toolbar);
 
 		client = new TextClassification(getApplicationContext());
-		handler = new Handler(Looper.getMainLooper());
+		handler = new Handler(Looper.getMainLooper()) {
+			@Override
+			public void handleMessage(Message msg) {
+				messageHandler(msg);
+			}
+		};
 
 		inputEditText = findViewById(R.id.input_text);
 		classifyButton = findViewById(R.id.button);
 		classifyButton.setOnClickListener(
 			(View v) -> {
-				runButton();
+				buttonHandler();
 			});
 		scrollView = findViewById(R.id.scroll_view);
 		resultTextView = findViewById(R.id.result_text_view);
 
-		bert = new BertExperiment(this);
+		bert = new BertExperiment(getApplicationContext(), handler);
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Log.v(TAG, "onStart");
-		handler.post(
-			() -> {
-				client.load();
-			});
-		bert.Initialize();
+		bert.initialize();
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		Log.v(TAG, "onStop");
-		handler.post(
-			() -> {
-				client.unload();
-			});
+		bert.close();
 	}
 
 	@Override
@@ -110,25 +106,36 @@ public class ChromeActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void runButton() {
-		bert.Evaluate(1);
+	/** Hanldles messages from handler **/
+	private void messageHandler(Message msg) {
 		double time = bert.getTime();
 		showExperimentResult(time, 1);
 	}
 
+	/** Handles button actions **/
+	private void buttonHandler() {
+		int contents = 1;
+		String texttoShow = "Running contents: " + contents + "\n";
+		texttoShow += "...\n";
+		resultTextView.append(texttoShow);
+		handler.post(
+			() -> {
+				bert.evaluate(contents);
+			});
+	}
+
+	/** Show experiment result in textbox **/
 	private void showExperimentResult(double time, int numberOfContents) {
 		runOnUiThread(
 			() -> {
-				String textToShow = "Contents: " + numberOfContents + "\n";
 				DecimalFormat df2 = new DecimalFormat("##.##");
-				textToShow += "Time: " + df2.format(time) + "\n";
+				String textToShow = "Time: " + df2.format(time) + "\n";
 				resultTextView.append(textToShow);
-
-				// Scroll to the bottom to show latest entry's classification result.
 				scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
 			}
 		);
 	}
+
 	/** Send input text to TextClassificationClass and show the classify messages **/
 	private void classify(final String text) {
 		Log.d(TAG, "classify run");
@@ -157,8 +164,7 @@ public class ChromeActivity extends AppCompatActivity {
 				textToShow += "---------\n";
 
 				// Append the result to the UI.
-
-	//							Log.v(TAG, textToShow);
+				resultTextView.append(textToShow);
 
 				// Clear the input text.
 				inputEditText.getText().clear();

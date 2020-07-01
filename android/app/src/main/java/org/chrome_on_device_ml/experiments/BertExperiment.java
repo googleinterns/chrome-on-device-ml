@@ -14,6 +14,7 @@ package org.chrome_on_device_ml.experiments;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Message;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,20 +22,23 @@ import org.chrome_on_device_ml.ml.LoadDatasetClient;
 import org.chrome_on_device_ml.ml.QaAnswer;
 import org.chrome_on_device_ml.ml.QaClient;
 
-public class BertExperiment {
+public class BertExperiment{
 	private static final String TAG = "CDML_MobileBert";
 	private final Context context;
 	private Handler handler;
+	private Handler UIHandler;
 
 	private LoadDatasetClient datasetClient;
 	private QaClient qaClient;
 	private ArrayList<Double> timing;
 
-	public BertExperiment(Context context) {
+	public BertExperiment(Context context, Handler handler) {
 		this.context = context;
+		this.UIHandler = handler;
+
 		this.datasetClient = new LoadDatasetClient(this.context);
 
-		HandlerThread handlerThread = new HandlerThread("QAClient");
+		HandlerThread handlerThread = new HandlerThread("BertExp");
 		handlerThread.start();
 
 		this.handler = new Handler(handlerThread.getLooper());
@@ -42,17 +46,7 @@ public class BertExperiment {
 		this.timing = new ArrayList<Double>();
 	}
 
-//	@Override
-//	public void run() {
-//		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-//		Log.v(TAG, "run method\n");
-//
-//	}
-
-	public void Test() {
-
-	}
-	public void Initialize() {
+	public void initialize() {
 		handler.post(
 			() -> {
 				qaClient.loadModel();
@@ -60,7 +54,15 @@ public class BertExperiment {
 			});
 	}
 
-	public void Evaluate(int numberOfContents) {
+	public void close() {
+		handler.post(
+		() -> {
+			qaClient.close();
+		});
+	}
+
+	/** Evaluates Bert model with contents and questions. */
+	public void evaluate(int numberOfContents) {
 		timing.clear();
 		int contentsRun = Math.min(numberOfContents, datasetClient.getNumberOfContents());
 		handler.post(
@@ -83,6 +85,10 @@ public class BertExperiment {
 						timing.add(contentTime);
 					}
 				}
+				Message doneMsg = new Message();
+				doneMsg.what = 0;
+				doneMsg.obj = "Evaluation Finished";
+				this.UIHandler.sendMessage(new Message());
 			}
 		);
 	}
