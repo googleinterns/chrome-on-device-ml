@@ -21,27 +21,35 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.chrome_on_device_ml.experiments.Experiment;
+import org.chrome_on_device_ml.experiments.MobileBertExperiment;
 import org.chrome_on_device_ml.ml.TextClassification;
 import org.chrome_on_device_ml.ml.TextClassification.Result;
 import org.chrome_on_device_ml.experiments.BertExperiment;
 
 public class ChromeActivity extends AppCompatActivity {
   private static final String TAG = "ChromeOnDeviceML";
+  private static final String [] MODELS = {"Bert", "MobileBert"};
+  private static final int MODELS_SIZE = 2;
   private TextClassification client;
 
-  private EditText inputEditText;
+  private Spinner modelSpinner;
   private Button classifyButton;
   private Handler handler;
   public TextView resultTextView;
   private ScrollView scrollView;
-  private BertExperiment bert;
+  private ArrayList experiments;
+  private int modelSelection;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +68,7 @@ public class ChromeActivity extends AppCompatActivity {
       }
     };
 
-    inputEditText = findViewById(R.id.input_text);
+    modelSpinner = findViewById(R.id.modelSpinner);
     classifyButton = findViewById(R.id.button);
     classifyButton.setOnClickListener(
             (View v) -> {
@@ -69,19 +77,28 @@ public class ChromeActivity extends AppCompatActivity {
     scrollView = findViewById(R.id.scroll_view);
     resultTextView = findViewById(R.id.result_text_view);
 
-    bert = new BertExperiment(getApplicationContext(), handler);
+    addItemsOnSpinner();
+    addListenerOnSpinnerItemSelection();
+
+    experiments = new ArrayList();
+    experiments.add(new BertExperiment(getApplicationContext(), handler));
+    experiments.add(new MobileBertExperiment(getApplicationContext(), handler));
   }
 
   @Override
   protected void onStart() {
     super.onStart();
-    bert.initialize();
+    for (int i=0; i<MODELS_SIZE; i++) {
+      ((Experiment)experiments.get(i)).initialize();
+    }
   }
 
   @Override
   protected void onStop() {
     super.onStop();
-    bert.close();
+    for (int i=0; i<MODELS_SIZE; i++) {
+      ((Experiment)experiments.get(i)).close();
+    }
   }
 
   @Override
@@ -106,9 +123,34 @@ public class ChromeActivity extends AppCompatActivity {
     return super.onOptionsItemSelected(item);
   }
 
+  public void addListenerOnSpinnerItemSelection() {
+    modelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+      @Override
+      public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        modelSelection = i;
+        textboxAppend("Model Selected: " + MODELS[modelSelection] + "\n");
+      }
+
+      @Override
+      public void onNothingSelected(AdapterView<?> adapterView) {
+        modelSelection = 0;
+      }
+    });
+  }
+
+  private void addItemsOnSpinner() {
+    List<String> list = new ArrayList<String>();
+    list.add("Bert");
+    list.add("MobileBert");
+    ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getApplicationContext(),
+      android.R.layout.simple_spinner_item, list);
+    dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    modelSpinner.setAdapter(dataAdapter);
+  }
+
   /** Hanldles messages from handler **/
   private void messageHandler(Message msg) {
-    double time = bert.getTime();
+    double time = ((Experiment)experiments.get(modelSelection)).getTime();
     showExperimentResult(time, 1);
   }
 
@@ -117,10 +159,10 @@ public class ChromeActivity extends AppCompatActivity {
     int contents = 1;
     String texttoShow = "Running contents: " + contents + "\n";
     texttoShow += "...\n";
-    resultTextView.append(texttoShow);
+    textboxAppend(texttoShow);
     handler.post(
       () -> {
-        bert.evaluate(contents);
+        ((Experiment)experiments.get(modelSelection)).evaluate(contents);
       }
     );
   }
@@ -131,8 +173,7 @@ public class ChromeActivity extends AppCompatActivity {
       () -> {
         DecimalFormat df2 = new DecimalFormat("##.##");
         String textToShow = "Time: " + df2.format(time) + "\n";
-        resultTextView.append(textToShow);
-        scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+        textboxAppend(textToShow);
       }
     );
   }
@@ -164,15 +205,13 @@ public class ChromeActivity extends AppCompatActivity {
                   String.format("    %s: %s\n", result.getTitle(), result.getConfidence());
         }
         textToShow += "---------\n";
-
-        // Append the result to the UI.
-        resultTextView.append(textToShow);
-
-        // Clear the input text.
-        inputEditText.getText().clear();
-
-        // Scroll to the bottom to show latest entry's classification result.
-        scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+        textboxAppend(textToShow);
       });
+  }
+
+  /** Append text to the textbox and scroll down the view. */
+  private void textboxAppend(String text) {
+    resultTextView.append(text);
+    scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
   }
 }
