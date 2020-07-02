@@ -22,9 +22,9 @@ import org.chrome_on_device_ml.ml.LoadDatasetClient;
 import org.chrome_on_device_ml.ml.QaAnswer;
 import org.chrome_on_device_ml.ml.QaClient;
 
-public class BertExperiment implements Experiment {
-  private static final String TAG = "CDML_Bert";
-  private static final String MODEL_PATH = "bert_model.tflite";
+public class MobileBertExperiment implements Experiment {
+  private static final String TAG = "CDML_MobileBert";
+  private static final String MODEL_PATH = "mobilebert_model.tflite";
 
   private final Context context;
   private Handler handler;
@@ -34,13 +34,13 @@ public class BertExperiment implements Experiment {
   private QaClient qaClient;
   private ArrayList<Double> timing;
 
-  public BertExperiment(Context context, Handler handler) {
+  public MobileBertExperiment(Context context, Handler handler) {
     this.context = context;
     this.UIHandler = handler;
 
     this.datasetClient = new LoadDatasetClient(this.context);
 
-    HandlerThread handlerThread = new HandlerThread("BertExp");
+    HandlerThread handlerThread = new HandlerThread("MobileBertExp");
     handlerThread.start();
 
     this.handler = new Handler(handlerThread.getLooper());
@@ -70,20 +70,15 @@ public class BertExperiment implements Experiment {
     handler.post(
       () -> {
         for (int i = 0; i < contentsRun; i++) {
-          /** fetch a content. */
           final String content = datasetClient.getContent(i);
           String[] question_set = datasetClient.getQuestions(i);
 
           for (int j = 0; j < question_set.length; j++) {
-            /** fetch a question. */
             String question = question_set[j];
 
-            /** Add question mark to match with the dataset. */
             if (!question.endsWith("?")) {
               question += '?';
             }
-
-            /** Run model and store timing. */
             final String questionToAsk = question;
             long beforeTime = System.currentTimeMillis();
             final List<QaAnswer> answers = qaClient.predict(questionToAsk, content);
@@ -92,7 +87,6 @@ public class BertExperiment implements Experiment {
             timing.add(contentTime);
           }
         }
-        /** Send message to UI thread. */
         Message doneMsg = new Message();
         doneMsg.what = 0;
         doneMsg.obj = "Evaluation Finished";

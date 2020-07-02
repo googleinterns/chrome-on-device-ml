@@ -7,7 +7,7 @@ import numpy as np
 
 MODEL_DIR = "/tmp/chrome/mobilebert"
 MODEL_URL = "https://storage.googleapis.com/cloud-tpu-checkpoints/mobilebert/mobilebert_squad_savedmodels.tar.gz"
-OUTPUT_DIR = "../android/app/src/main/assets"
+OUTPUT_DIR = "build"
 
 def prepare_model(opts):
   #download the model
@@ -27,7 +27,7 @@ def prepare_model(opts):
   print(model_path)
   converter = tf.lite.TFLiteConverter.from_saved_model(model_path)
   tflite_model = converter.convert()
-  with open(os.path.join(opts.out_dir, "text_mobilebert.tflite"), "wb") as f:
+  with open(os.path.join(opts.out_dir, "mobilebert_model.tflite"), "wb") as f:
     f.write(tflite_model)
 
 # def evaluate(opts):
