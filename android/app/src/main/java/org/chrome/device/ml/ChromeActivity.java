@@ -9,11 +9,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-package org.chrome_on_device_ml;
+package org.chrome;
 
+import android.content.Intent;
+import android.content.res.AssetManager;
+import android.net.Uri;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -27,29 +32,39 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.chrome_on_device_ml.experiments.Experiment;
-import org.chrome_on_device_ml.experiments.MobileBertExperiment;
-import org.chrome_on_device_ml.ml.TextClassification;
-import org.chrome_on_device_ml.ml.TextClassification.Result;
-import org.chrome_on_device_ml.experiments.BertExperiment;
+import org.chrome.chrome.CustomTabActivityHelper;
+import org.chrome.experiments.Experiment;
+import org.chrome.experiments.MobileBertExperiment;
+import org.chrome.ml.TextClassification;
+import org.chrome.ml.TextClassification.Result;
+import org.chrome.experiments.BertExperiment;
 
 public class ChromeActivity extends AppCompatActivity {
   private static final String TAG = "ChromeOnDeviceML";
   private static final String [] MODELS = {"Bert", "MobileBert"};
+  private static final String URL_PATH = "url_list.txt";
   private static final int MODELS_SIZE = 2;
   private TextClassification client;
 
   private Spinner modelSpinner;
   private Button classifyButton;
   private Handler handler;
+  private Handler tabHandler;
   public TextView resultTextView;
   private ScrollView scrollView;
+
   private ArrayList experiments;
   private int modelSelection;
+  private ArrayList<String> urlList;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +82,7 @@ public class ChromeActivity extends AppCompatActivity {
         messageHandler(msg);
       }
     };
+    tabHandler = new Handler();
 
     modelSpinner = findViewById(R.id.modelSpinner);
     classifyButton = findViewById(R.id.button);
@@ -83,7 +99,15 @@ public class ChromeActivity extends AppCompatActivity {
     experiments = new ArrayList();
     experiments.add(new BertExperiment(getApplicationContext(), handler));
     experiments.add(new MobileBertExperiment(getApplicationContext(), handler));
+
+    urlList = new ArrayList<String>();
+    try {
+      getURLList(getApplicationContext().getAssets());
+    } catch (IOException e) {
+      Log.e(TAG, "Error in reading URL list.");
+    }
   }
+
 
   @Override
   protected void onStart() {
@@ -156,15 +180,25 @@ public class ChromeActivity extends AppCompatActivity {
 
   /** Handles button actions **/
   private void buttonHandler() {
-    int contents = 1;
-    String texttoShow = "Running contents: " + contents + "\n";
-    texttoShow += "...\n";
-    textboxAppend(texttoShow);
-    handler.post(
-      () -> {
-        ((Experiment)experiments.get(modelSelection)).evaluate(contents);
-      }
-    );
+//    int contents = 1;
+//    String texttoShow = "Running contents: " + contents + "\n";
+//    texttoShow += "...\n";
+//    textboxAppend(texttoShow);
+//    handler.post(
+//      () -> {
+//        ((Experiment)experiments.get(modelSelection)).evaluate(contents);
+//      }
+//    );
+
+//    textboxAppend("Running custom tab\n");
+//    for (String url: urlList) {
+//      openCustomTab(url);
+//      Log.v(TAG, "Page load");
+//    }
+
+    Intent i= new Intent(this, MLService.class);
+    i.putExtra("KEY1", "Value to be used by the service");
+    this.startService(i);
   }
 
   /** Show experiment result in textbox **/
@@ -213,5 +247,22 @@ public class ChromeActivity extends AppCompatActivity {
   private void textboxAppend(String text) {
     resultTextView.append(text);
     scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+  }
+
+  private void openCustomTab(String url) {
+    CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
+    intentBuilder.setShowTitle(true);
+
+    CustomTabActivityHelper.openCustomTab(
+            this, intentBuilder.build(), Uri.parse(url));
+  }
+
+  private void getURLList(AssetManager assetManager) throws IOException {
+    try (InputStream ins = assetManager.open(URL_PATH);
+         BufferedReader reader = new BufferedReader(new InputStreamReader(ins))) {
+      while (reader.ready()) {
+        this.urlList.add(reader.readLine());
+      }
+    }
   }
 }

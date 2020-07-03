@@ -9,7 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-package org.chrome_on_device_ml.ml;
+package org.chrome.ml;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-import org.chrome_on_device_ml.tokenization.FullTokenizer;
+import org.chrome.tokenization.FullTokenizer;
 import org.tensorflow.lite.Interpreter;
 
 public class TextClassification {

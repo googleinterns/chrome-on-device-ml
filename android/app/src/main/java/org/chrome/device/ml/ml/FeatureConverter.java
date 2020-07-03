@@ -9,7 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-package org.chrome_on_device_ml.ml;
+package org.chrome.ml;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.chrome_on_device_ml.tokenization.FullTokenizer;
+import org.chrome.tokenization.FullTokenizer;
 
 /** Convert String to features that can be fed into BERT model. */
 public final class FeatureConverter {
