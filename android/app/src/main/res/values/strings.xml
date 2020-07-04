@@ -1,6 +1,7 @@
 <resources>
     <string name="ch_ml_app_name">Chrome On-Device ML</string>
     <string name="action_settings">Settings</string>
-    <string name="ch_ml_text_hint" translatable="false">Please enter your text.</string>
-    <string name="ch_ml_button_text" translatable="false">Predict</string>
+    <string name="ch_ml_button_text" translatable="false">Run</string>
+    <string name="ml_service_process" translatable="false">:mlService</string>
+    <string name="ml_service_label" translatable="false">MLService</string>
 </resources>
