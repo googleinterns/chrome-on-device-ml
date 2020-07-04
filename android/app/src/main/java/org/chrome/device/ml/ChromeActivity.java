@@ -9,9 +9,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-package org.chrome;
+package org.chrome.device.ml;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,8 +23,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.RemoteException;
+import android.renderscript.ScriptGroup;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
@@ -41,19 +47,22 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.chrome.chrome.CustomTabActivityHelper;
-import org.chrome.experiments.Experiment;
-import org.chrome.experiments.MobileBertExperiment;
-import org.chrome.ml.TextClassification;
-import org.chrome.ml.TextClassification.Result;
-import org.chrome.experiments.BertExperiment;
+import org.chrome.device.ml.customTab.CustomTabActivityHelper;
+import org.chrome.device.ml.experiments.Experiment;
+import org.chrome.device.ml.experiments.MobileBertExperiment;
+import org.chrome.device.ml.ml.TextClassification;
+import org.chrome.device.ml.ml.TextClassification.Result;
+import org.chrome.device.ml.experiments.BertExperiment;
+import org.chrome.device.ml.service.RemoteService;
+import org.chrome.device.ml.service.RemoteServiceCallback;
 
-public class ChromeActivity extends AppCompatActivity {
+public class ChromeActivity extends AppCompatActivity implements ServiceConnection {
   private static final String TAG = "ChromeOnDeviceML";
   private static final String [] MODELS = {"Bert", "MobileBert"};
   private static final String URL_PATH = "url_list.txt";
   private static final int MODELS_SIZE = 2;
-  private TextClassification client;
+
+  private static final int BUMP_MSG = 1;
 
   private Spinner modelSpinner;
   private Button classifyButton;
@@ -62,9 +71,13 @@ public class ChromeActivity extends AppCompatActivity {
   public TextView resultTextView;
   private ScrollView scrollView;
 
+  private TextClassification client;
   private ArrayList experiments;
   private int modelSelection;
   private ArrayList<String> urlList;
+
+  private RemoteService mService;
+  private Intent mIntent;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +125,13 @@ public class ChromeActivity extends AppCompatActivity {
   @Override
   protected void onStart() {
     super.onStart();
+
+    mIntent = new Intent(ChromeActivity.this, MLService.class);
+    mIntent.setAction(RemoteService.class.getName());
+//    i.putExtra("KEY1", "Value to be used by the service");
+    bindService(mIntent, this, Context.BIND_AUTO_CREATE);
+    this.startService(mIntent);
+
     for (int i=0; i<MODELS_SIZE; i++) {
       ((Experiment)experiments.get(i)).initialize();
     }
@@ -120,6 +140,16 @@ public class ChromeActivity extends AppCompatActivity {
   @Override
   protected void onStop() {
     super.onStop();
+    if (mService != null) {
+      try {
+        mService.unregisterCallback(mCallback);
+      } catch (RemoteException e) {
+        Log.e(TAG, "Error unregister callback");
+      }
+    }
+    unbindService(this);
+    stopService(new Intent(ChromeActivity.this, MLService.class));
+
     for (int i=0; i<MODELS_SIZE; i++) {
       ((Experiment)experiments.get(i)).close();
     }
@@ -195,11 +225,53 @@ public class ChromeActivity extends AppCompatActivity {
 //      openCustomTab(url);
 //      Log.v(TAG, "Page load");
 //    }
-
-    Intent i= new Intent(this, MLService.class);
-    i.putExtra("KEY1", "Value to be used by the service");
-    this.startService(i);
+    textboxAppend("IPC\n");
   }
+
+  @Override
+  public void onServiceConnected(ComponentName componentName, IBinder service) {
+    Log.v(TAG, "onServiceConnected");
+    mService = RemoteService.Stub.asInterface(service);
+
+    /** Monitor service **/
+    try{
+      mService.registerCallback(mCallback);
+    } catch (RemoteException e) {
+      Log.e(TAG, "Remote Service");
+    }
+  }
+
+  @Override
+  public void onServiceDisconnected(ComponentName componentName) {
+    Log.e(TAG, "Service has unexpectedly disconnected");
+    mService = null;
+  }
+
+  private RemoteServiceCallback mCallback = new RemoteServiceCallback.Stub() {
+    /**
+     * This is called by the remote service regularly to tell us about
+     * new values.  Note that IPC calls are dispatched through a thread
+     * pool running in each process, so the code executing here will
+     * NOT be running in our main thread like most other things -- so,
+     * to update the UI, we need to use a Handler to hop over there.
+     */
+    public void valueChanged(int value) {
+      mHandler.sendMessage(mHandler.obtainMessage(BUMP_MSG, value, 0));
+      Log.v(TAG, "Value: " + value);
+    }
+  };
+
+  private Handler mHandler = new Handler() {
+    @Override public void handleMessage(Message msg) {
+      switch (msg.what) {
+        case BUMP_MSG:
+          textboxAppend("Service: " + msg.arg1 + "\n");
+          break;
+        default:
+          super.handleMessage(msg);
+      }
+    }
+  };
 
   /** Show experiment result in textbox **/
   private void showExperimentResult(double time, int numberOfContents) {

@@ -9,7 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-package org.chrome.experiments;
+package org.chrome.device.ml.experiments;
 
 import android.content.Context;
 import android.os.Handler;
@@ -18,9 +18,9 @@ import android.os.Message;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.chrome.ml.LoadDatasetClient;
-import org.chrome.ml.QaAnswer;
-import org.chrome.ml.QaClient;
+import org.chrome.device.ml.ml.LoadDatasetClient;
+import org.chrome.device.ml.ml.QaAnswer;
+import org.chrome.device.ml.ml.QaClient;
 
 public class BertExperiment implements Experiment {
   private static final String TAG = "CDML_Bert";
