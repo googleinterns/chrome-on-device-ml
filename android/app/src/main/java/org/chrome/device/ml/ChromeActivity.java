@@ -27,7 +27,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
-import android.renderscript.ScriptGroup;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
@@ -53,6 +52,7 @@ import org.chrome.device.ml.experiments.MobileBertExperiment;
 import org.chrome.device.ml.ml.TextClassification;
 import org.chrome.device.ml.ml.TextClassification.Result;
 import org.chrome.device.ml.experiments.BertExperiment;
+import org.chrome.device.ml.service.MLService;
 import org.chrome.device.ml.service.RemoteService;
 import org.chrome.device.ml.service.RemoteServiceCallback;
 

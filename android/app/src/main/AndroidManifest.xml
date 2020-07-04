@@ -21,7 +21,7 @@
     </activity>
 
     <service
-      android:name="org.chrome.device.ml.MLService"
+      android:name="org.chrome.device.ml.service.MLService"
       android:icon="@mipmap/ic_launcher"
       android:label="@string/ml_service_label"
       android:process="@string/ml_service_process"
