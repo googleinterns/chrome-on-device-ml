@@ -15,6 +15,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -22,12 +23,28 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import android.os.Process;
 
+import org.chrome.device.ml.Utils;
+import org.chrome.device.ml.experiments.BertExperiment;
+import org.chrome.device.ml.experiments.Experiment;
+import org.chrome.device.ml.experiments.MobileBertExperiment;
 import org.chrome.device.ml.service.RemoteService;
 import org.chrome.device.ml.service.RemoteServiceCallback;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class MLService extends Service {
   private final static String TAG = "MLService";
-  int mValue = 0;
+  private static final String URL_PATH = "url_list.txt";
+  private static final int MODELS_SIZE = 1;
+  private static final int MSG_REPORT = 1;
+
+  private Handler expHandler;
+  private ArrayList experiments;
+  private double expTime;
+  private int modelSelection;
+  private ArrayList<String> urlList;
+
   /**
    * This is a list of callbacks that have been registered with the
    * service.  Note that this is package scoped (instead of private) so
@@ -39,25 +56,28 @@ public class MLService extends Service {
   private final RemoteService.Stub mbinder = new RemoteService.Stub() {
     @Override
     public int getPid(){
-      Log.v(TAG, "getPid");
       return Process.myPid();
     }
 
     @Override
     public void basicTypes(int anInt, long aLong, boolean aBoolean,
                            float aFloat, double aDouble, String aString) {
-      Log.v(TAG, "basicType");
+    }
+
+    @Override
+    public void taskStart() throws RemoteException {
+      experimentRun();
     }
 
     @Override
     public void registerCallback(RemoteServiceCallback cb) throws RemoteException {
-      Log.v(TAG, "registerCallback");
+      Log.v(TAG, "Service callback register.");
       if (cb != null) mCallbacks.register(cb);
     }
 
     @Override
     public void unregisterCallback(RemoteServiceCallback cb) throws RemoteException {
-      Log.v(TAG, "unregisterCallback");
+      Log.v(TAG, "Serivce callback unregister.");
       if (cb != null) mCallbacks.unregister(cb);
     }
   };
@@ -65,68 +85,92 @@ public class MLService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
-    Log.v(TAG, "onCreate");
+    modelSelection = 0;
+    expHandler = new Handler(Looper.getMainLooper()) {
+      @Override
+      public void handleMessage(Message msg) {
+        experimentMessageHandler(msg);
+      }
+    };
+
+    experiments = new ArrayList();
+    experiments.add(new BertExperiment(getApplicationContext(), expHandler));
+//    experiments.add(new MobileBertExperiment(getApplicationContext(), expHandler));
+
+    urlList = new ArrayList<String>();
+    try {
+      urlList = Utils.getURLList(getApplicationContext().getAssets(), URL_PATH);
+    } catch (IOException e) {
+      Log.e(TAG, "Error in reading URL list.");
+    }
+
+    for (int i=0; i<MODELS_SIZE; i++) {
+      ((Experiment)experiments.get(i)).initialize();
+    }
   }
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    //TODO do something useful
     Log.i(TAG, "Received start id " + startId + ": " + intent);
-    /**
-     While this service is running, it will continually increment a
-     number.  Send the first message that is used to perform the
-     increment.
-    */
-    mHandler.sendEmptyMessage(REPORT_MSG);
-    return Service.START_NOT_STICKY;
+    experimentRun();
+    return Service.START_STICKY;
   }
 
   @Nullable
   @Override
   public IBinder onBind(Intent intent) {
-    Log.v(TAG, "onBind");
     return mbinder;
   }
 
   @Override
   public void onDestroy() {
-    Log.v(TAG, "onDestroy");
-    /** Remove the next pending message to increment the counter, stopping
-     * the increment loop.
-     */
-    mHandler.removeMessages(REPORT_MSG);
+    for (int i=0; i<MODELS_SIZE; i++) {
+      ((Experiment)experiments.get(i)).close();
+    }
+
+    /** Remove the next pending message to increment the counter, stoppin the increment loop. **/
+    mHandler.removeMessages(MSG_REPORT);
   }
 
-  private static final int REPORT_MSG = 1;
   private final Handler mHandler = new Handler() {
     @Override public void handleMessage(Message msg) {
+      Log.v(TAG, "msg.what: " + msg.what);
       switch (msg.what) {
-        /* It is time to bump the value! */
-        case REPORT_MSG: {
-          // Up it goes.
-          int value = ++mValue;
-
-          /* Broadcast to all clients the new value. */
+        case MSG_REPORT: {
+          /** Broadcast to all clients the new value. **/
           final int N = mCallbacks.beginBroadcast();
           for (int i=0; i<N; i++) {
             try {
-              mCallbacks.getBroadcastItem(i).valueChanged(value);
+              mCallbacks.getBroadcastItem(i).timeChanged(expTime);
             } catch (RemoteException e) {
-              Log.e(TAG, "Error handle message");
-              /*
-               The RemoteCallbackList will take care of removing
-               the dead object for us.
-              */
+              Log.e(TAG, e.getStackTrace().toString());
             }
           }
           mCallbacks.finishBroadcast();
-
-          /* Repeat every 1 second. */
-          sendMessageDelayed(obtainMessage(REPORT_MSG), 1*1000);
         } break;
         default:
           super.handleMessage(msg);
       }
     }
   };
+
+  /** Hanldle messages from experiments */
+  private void experimentMessageHandler(Message msg) {
+    expTime = ((Experiment)experiments.get(modelSelection)).getTime();
+    Log.v(TAG, "Time: + " + expTime);
+    mHandler.sendEmptyMessage(MSG_REPORT);
+  }
+
+  private void experimentRun() {
+    int contents = 1;
+    String texttoShow = "Running contents: " + contents + "\n";
+    texttoShow += "...\n";
+    Log.v(TAG, texttoShow);
+
+    expHandler.post(
+      () -> {
+        ((Experiment)experiments.get(modelSelection)).evaluate(contents);
+      }
+    );
+  }
 }

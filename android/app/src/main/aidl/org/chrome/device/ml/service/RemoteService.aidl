@@ -14,21 +14,19 @@ package org.chrome.device.ml.service;
 import org.chrome.device.ml.service.RemoteServiceCallback;
 
 interface RemoteService {
-  /* Request the process ID of this service, to do evil things with it. */
+  /** Request the process ID of this service, to do evil things with it. **/
   int getPid();
 
-  /*
-   * Demonstrates some basic types that you can use as parameters
-   * and return values in AIDL.
-   */
+  /** Demonstrates some basic types that you can use as parameters and return values in AIDL. **/
   void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
           double aDouble, String aString);
 
-  /* Register callback */
+  /** start service task **/
+  void taskStart();
+
+  /** Register callback **/
   void registerCallback(RemoteServiceCallback cb);
 
-  /*
-   * Remove a previously registered callback interface.
-   */
+  /** Remove a previously registered callback interface. **/
   void unregisterCallback(RemoteServiceCallback cb);
 }

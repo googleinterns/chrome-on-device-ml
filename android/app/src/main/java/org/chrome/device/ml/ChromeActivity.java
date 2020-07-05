@@ -15,13 +15,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.browser.customtabs.CustomTabsIntent;
-
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -37,21 +35,13 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.chrome.device.ml.customTab.CustomTabActivityHelper;
-import org.chrome.device.ml.experiments.Experiment;
-import org.chrome.device.ml.experiments.MobileBertExperiment;
 import org.chrome.device.ml.ml.TextClassification;
 import org.chrome.device.ml.ml.TextClassification.Result;
-import org.chrome.device.ml.experiments.BertExperiment;
 import org.chrome.device.ml.service.MLService;
 import org.chrome.device.ml.service.RemoteService;
 import org.chrome.device.ml.service.RemoteServiceCallback;
@@ -59,25 +49,23 @@ import org.chrome.device.ml.service.RemoteServiceCallback;
 public class ChromeActivity extends AppCompatActivity implements ServiceConnection {
   private static final String TAG = "ChromeOnDeviceML";
   private static final String [] MODELS = {"Bert", "MobileBert"};
-  private static final String URL_PATH = "url_list.txt";
-  private static final int MODELS_SIZE = 2;
+  private static final int MSG_TIME_UPDATE = 1;
 
-  private static final int BUMP_MSG = 1;
-
-  private Spinner modelSpinner;
   private Button classifyButton;
-  private Handler handler;
+  private Handler mhandler;
   private Handler tabHandler;
   public TextView resultTextView;
   private ScrollView scrollView;
+  private Spinner modelSpinner;
+  private int spinnerSelection;
 
   private TextClassification client;
-  private ArrayList experiments;
-  private int modelSelection;
-  private ArrayList<String> urlList;
 
+  /** ML Service */
   private RemoteService mService;
-  private Intent mIntent;
+  private Intent mBindIntent;
+  private Handler serviceHandler;
+  private RemoteServiceCallback serviceCallback;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -89,12 +77,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     setSupportActionBar(toolbar);
 
     client = new TextClassification(getApplicationContext());
-    handler = new Handler(Looper.getMainLooper()) {
-      @Override
-      public void handleMessage(Message msg) {
-        messageHandler(msg);
-      }
-    };
+    mhandler = new Handler(Looper.getMainLooper());
     tabHandler = new Handler();
 
     modelSpinner = findViewById(R.id.modelSpinner);
@@ -109,16 +92,8 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     addItemsOnSpinner();
     addListenerOnSpinnerItemSelection();
 
-    experiments = new ArrayList();
-    experiments.add(new BertExperiment(getApplicationContext(), handler));
-    experiments.add(new MobileBertExperiment(getApplicationContext(), handler));
-
-    urlList = new ArrayList<String>();
-    try {
-      getURLList(getApplicationContext().getAssets());
-    } catch (IOException e) {
-      Log.e(TAG, "Error in reading URL list.");
-    }
+    mBindIntent = new Intent(ChromeActivity.this, MLService.class);
+    mBindIntent.setAction(RemoteService.class.getName());
   }
 
 
@@ -126,15 +101,36 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
   protected void onStart() {
     super.onStart();
 
-    mIntent = new Intent(ChromeActivity.this, MLService.class);
-    mIntent.setAction(RemoteService.class.getName());
-//    i.putExtra("KEY1", "Value to be used by the service");
-    bindService(mIntent, this, Context.BIND_AUTO_CREATE);
-    this.startService(mIntent);
+    serviceHandler = new Handler() {
+      @Override public void handleMessage(Message msg) {
+        switch (msg.what) {
+          case MSG_TIME_UPDATE:
+            double time = (double) msg.obj;
+            textboxAppend("Time: " + time + "\n");
+            break;
+          default:
+            super.handleMessage(msg);
+        }
+      }
+    };
 
-    for (int i=0; i<MODELS_SIZE; i++) {
-      ((Experiment)experiments.get(i)).initialize();
-    }
+    serviceCallback = new RemoteServiceCallback.Stub() {
+      /**
+       * This is called by the remote service regularly to tell us about
+       * new values.  Note that IPC calls are dispatched through a thread
+       * pool running in each process, so the code executing here will
+       * NOT be running in our main thread like most other things -- so,
+       * to update the UI, we need to use a Handler to hop over there.
+       */
+      public void timeChanged(double time) {
+        Message msg = new Message();
+        msg.what = MSG_TIME_UPDATE;
+        msg.obj = time;
+        serviceHandler.sendMessage(msg);
+      }
+    };
+
+    bindService(mBindIntent, this, Context.BIND_AUTO_CREATE);
   }
 
   @Override
@@ -142,7 +138,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     super.onStop();
     if (mService != null) {
       try {
-        mService.unregisterCallback(mCallback);
+        mService.unregisterCallback(serviceCallback);
       } catch (RemoteException e) {
         Log.e(TAG, "Error unregister callback");
       }
@@ -150,26 +146,25 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     unbindService(this);
     stopService(new Intent(ChromeActivity.this, MLService.class));
 
-    for (int i=0; i<MODELS_SIZE; i++) {
-      ((Experiment)experiments.get(i)).close();
-    }
   }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    // Inflate the menu; this adds items to the action bar if it is present.
+    /** Inflate the menu; this adds items to the action bar if it is present. */
     getMenuInflater().inflate(R.menu.menu_main, menu);
     return true;
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
+    /**
+     Handle action bar item clicks here. The action bar will
+     automatically handle clicks on the Home/Up button, so long
+     as you specify a parent activity in AndroidManifest.xml.
+    */
     int id = item.getItemId();
 
-    //noinspection SimplifiableIfStatement
+    /** noinspection SimplifiableIfStatement */
     if (id == R.id.action_settings) {
       return true;
     }
@@ -181,13 +176,13 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     modelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        modelSelection = i;
-        textboxAppend("Model Selected: " + MODELS[modelSelection] + "\n");
+        spinnerSelection = i;
+        textboxAppend("Model Selected: " + MODELS[spinnerSelection] + "\n");
       }
 
       @Override
       public void onNothingSelected(AdapterView<?> adapterView) {
-        modelSelection = 0;
+        spinnerSelection = 0;
       }
     });
   }
@@ -202,42 +197,25 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     modelSpinner.setAdapter(dataAdapter);
   }
 
-  /** Hanldles messages from handler **/
-  private void messageHandler(Message msg) {
-    double time = ((Experiment)experiments.get(modelSelection)).getTime();
-    showExperimentResult(time, 1);
-  }
-
-  /** Handles button actions **/
+  /** Handles button actions */
   private void buttonHandler() {
-//    int contents = 1;
-//    String texttoShow = "Running contents: " + contents + "\n";
-//    texttoShow += "...\n";
-//    textboxAppend(texttoShow);
-//    handler.post(
-//      () -> {
-//        ((Experiment)experiments.get(modelSelection)).evaluate(contents);
-//      }
-//    );
 
-//    textboxAppend("Running custom tab\n");
-//    for (String url: urlList) {
-//      openCustomTab(url);
-//      Log.v(TAG, "Page load");
-//    }
     textboxAppend("IPC\n");
+    Log.v(TAG, "IPC");
+
+    this.startService(mBindIntent);
   }
 
   @Override
   public void onServiceConnected(ComponentName componentName, IBinder service) {
-    Log.v(TAG, "onServiceConnected");
+    Log.v(TAG, "Service connected.");
     mService = RemoteService.Stub.asInterface(service);
 
-    /** Monitor service **/
+    /** Monitor service */
     try{
-      mService.registerCallback(mCallback);
+      mService.registerCallback(serviceCallback);
     } catch (RemoteException e) {
-      Log.e(TAG, "Remote Service");
+      Log.e(TAG, e.getStackTrace().toString());
     }
   }
 
@@ -247,33 +225,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     mService = null;
   }
 
-  private RemoteServiceCallback mCallback = new RemoteServiceCallback.Stub() {
-    /**
-     * This is called by the remote service regularly to tell us about
-     * new values.  Note that IPC calls are dispatched through a thread
-     * pool running in each process, so the code executing here will
-     * NOT be running in our main thread like most other things -- so,
-     * to update the UI, we need to use a Handler to hop over there.
-     */
-    public void valueChanged(int value) {
-      mHandler.sendMessage(mHandler.obtainMessage(BUMP_MSG, value, 0));
-      Log.v(TAG, "Value: " + value);
-    }
-  };
-
-  private Handler mHandler = new Handler() {
-    @Override public void handleMessage(Message msg) {
-      switch (msg.what) {
-        case BUMP_MSG:
-          textboxAppend("Service: " + msg.arg1 + "\n");
-          break;
-        default:
-          super.handleMessage(msg);
-      }
-    }
-  };
-
-  /** Show experiment result in textbox **/
+  /** Show experiment result in textbox */
   private void showExperimentResult(double time, int numberOfContents) {
     runOnUiThread(
       () -> {
@@ -284,11 +236,12 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     );
   }
 
-  /** Send input text to TextClassificationClass and show the classify messages **/
+  /** Send input text to TextClassificationClass and show the classify messages */
   private void classify(final String text) {
     Log.d(TAG, "classify run");
 
-    handler.post(
+    //TODO: move this to service
+    mhandler.post(
       () -> {
         // Run text classification with TF Lite.
         List<Result> results = client.classify(text);
@@ -327,14 +280,5 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
     CustomTabActivityHelper.openCustomTab(
             this, intentBuilder.build(), Uri.parse(url));
-  }
-
-  private void getURLList(AssetManager assetManager) throws IOException {
-    try (InputStream ins = assetManager.open(URL_PATH);
-         BufferedReader reader = new BufferedReader(new InputStreamReader(ins))) {
-      while (reader.ready()) {
-        this.urlList.add(reader.readLine());
-      }
-    }
   }
 }
