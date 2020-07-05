@@ -32,6 +32,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("org.chrome_on_device_ml", appContext.getPackageName());
+        assertEquals("org.chrome.device.ml", appContext.getPackageName());
     }
 }
