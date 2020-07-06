@@ -35,11 +35,14 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.chrome.device.ml.customTab.CustomTabActivityHelper;
+import org.chrome.device.ml.experiments.Experiment;
 import org.chrome.device.ml.ml.TextClassification;
 import org.chrome.device.ml.ml.TextClassification.Result;
 import org.chrome.device.ml.service.MLService;
@@ -49,6 +52,7 @@ import org.chrome.device.ml.service.RemoteServiceCallback;
 public class ChromeActivity extends AppCompatActivity implements ServiceConnection {
   private static final String TAG = "ChromeOnDeviceML";
   private static final String [] MODELS = {"MobileBert"};
+  private static final String URL_PATH = "url_list.txt";
   private static final int MSG_TIME_UPDATE = 1;
 
   private Button classifyButton;
@@ -66,6 +70,9 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
   private Intent mBindIntent;
   private Handler serviceHandler;
   private RemoteServiceCallback serviceCallback;
+
+  /** Custom Tab **/
+  private ArrayList<String> urlList;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +101,13 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
     mBindIntent = new Intent(ChromeActivity.this, MLService.class);
     mBindIntent.setAction(RemoteService.class.getName());
+
+    urlList = new ArrayList<String>();
+    try {
+      urlList = Utils.getURLList(getApplicationContext().getAssets(), URL_PATH);
+    } catch (IOException e) {
+      Log.e(TAG, "Error in reading URL list.");
+    }
   }
 
 

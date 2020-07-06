@@ -22,27 +22,22 @@ import android.os.RemoteException;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import android.os.Process;
+import java.util.ArrayList;
 
-import org.chrome.device.ml.Utils;
 import org.chrome.device.ml.experiments.Experiment;
 import org.chrome.device.ml.experiments.MobileBertExperiment;
 import org.chrome.device.ml.service.RemoteService;
 import org.chrome.device.ml.service.RemoteServiceCallback;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 public class MLService extends Service {
   private final static String TAG = "MLService";
-  private static final String URL_PATH = "url_list.txt";
-  private static final int MODELS_SIZE = 1;
   private static final int MSG_REPORT = 1;
+  private static final int MODELS_SIZE = 1;
 
   private Handler expHandler;
   private ArrayList experiments;
   private double expTime;
   private int modelSelection;
-  private ArrayList<String> urlList;
 
   /**
    * This is a list of callbacks that have been registered with the
@@ -94,14 +89,6 @@ public class MLService extends Service {
 
     experiments = new ArrayList();
     experiments.add(new MobileBertExperiment(getApplicationContext(), expHandler));
-
-    urlList = new ArrayList<String>();
-    try {
-      urlList = Utils.getURLList(getApplicationContext().getAssets(), URL_PATH);
-    } catch (IOException e) {
-      Log.e(TAG, "Error in reading URL list.");
-    }
-
     for (int i=0; i<MODELS_SIZE; i++) {
       ((Experiment)experiments.get(i)).initialize();
     }
