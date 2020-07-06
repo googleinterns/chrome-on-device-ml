@@ -23,8 +23,8 @@ import org.chrome.device.ml.ml.QaAnswer;
 import org.chrome.device.ml.ml.QaClient;
 
 public class MobileBertExperiment implements Experiment {
-  private static final String TAG = "CDML_MobileBert";
-  private static final String MODEL_PATH = "mobilebert_model.tflite";
+  private static final String TAG = "MobileBertExperiment";
+  private static final String MODEL_PATH = "bert_model.tflite";
 
   private final Context context;
   private Handler handler;
@@ -40,7 +40,7 @@ public class MobileBertExperiment implements Experiment {
 
     this.datasetClient = new LoadDatasetClient(this.context);
 
-    HandlerThread handlerThread = new HandlerThread("MobileBertExp");
+    HandlerThread handlerThread = new HandlerThread("BertExp");
     handlerThread.start();
 
     this.handler = new Handler(handlerThread.getLooper());
@@ -50,17 +50,17 @@ public class MobileBertExperiment implements Experiment {
 
   public void initialize() {
     handler.post(
-      () -> {
-        qaClient.loadModel();
-        qaClient.loadDictionary();
-      });
+            () -> {
+              qaClient.loadModel();
+              qaClient.loadDictionary();
+            });
   }
 
   public void close() {
     handler.post(
-      () -> {
-        qaClient.close();
-      });
+            () -> {
+              qaClient.close();
+            });
   }
 
   /** Evaluates Bert model with contents and questions. */
@@ -68,30 +68,36 @@ public class MobileBertExperiment implements Experiment {
     timing.clear();
     int contentsRun = Math.min(numberOfContents, datasetClient.getNumberOfContents());
     handler.post(
-      () -> {
-        for (int i = 0; i < contentsRun; i++) {
-          final String content = datasetClient.getContent(i);
-          String[] question_set = datasetClient.getQuestions(i);
+            () -> {
+              for (int i = 0; i < contentsRun; i++) {
+                /** fetch a content. */
+                final String content = datasetClient.getContent(i);
+                String[] question_set = datasetClient.getQuestions(i);
 
-          for (int j = 0; j < question_set.length; j++) {
-            String question = question_set[j];
+                for (int j = 0; j < question_set.length; j++) {
+                  /** fetch a question. */
+                  String question = question_set[j];
 
-            if (!question.endsWith("?")) {
-              question += '?';
+                  /** Add question mark to match with the dataset. */
+                  if (!question.endsWith("?")) {
+                    question += '?';
+                  }
+
+                  /** Run model and store timing. */
+                  final String questionToAsk = question;
+                  long beforeTime = System.currentTimeMillis();
+                  final List<QaAnswer> answers = qaClient.predict(questionToAsk, content);
+                  long afterTime = System.currentTimeMillis();
+                  Double contentTime = new Double((afterTime - beforeTime) / 1000.0);
+                  timing.add(contentTime);
+                }
+              }
+              /** Send message to UI thread. */
+              Message doneMsg = new Message();
+              doneMsg.what = 0;
+              doneMsg.obj = "Evaluation Finished";
+              this.UIHandler.sendMessage(new Message());
             }
-            final String questionToAsk = question;
-            long beforeTime = System.currentTimeMillis();
-            final List<QaAnswer> answers = qaClient.predict(questionToAsk, content);
-            long afterTime = System.currentTimeMillis();
-            Double contentTime = new Double((afterTime - beforeTime) / 1000.0);
-            timing.add(contentTime);
-          }
-        }
-        Message doneMsg = new Message();
-        doneMsg.what = 0;
-        doneMsg.obj = "Evaluation Finished";
-        this.UIHandler.sendMessage(new Message());
-      }
     );
   }
 

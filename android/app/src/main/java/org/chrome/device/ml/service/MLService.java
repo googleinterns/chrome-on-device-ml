@@ -24,7 +24,6 @@ import androidx.annotation.Nullable;
 import android.os.Process;
 
 import org.chrome.device.ml.Utils;
-import org.chrome.device.ml.experiments.BertExperiment;
 import org.chrome.device.ml.experiments.Experiment;
 import org.chrome.device.ml.experiments.MobileBertExperiment;
 import org.chrome.device.ml.service.RemoteService;
@@ -94,8 +93,7 @@ public class MLService extends Service {
     };
 
     experiments = new ArrayList();
-    experiments.add(new BertExperiment(getApplicationContext(), expHandler));
-//    experiments.add(new MobileBertExperiment(getApplicationContext(), expHandler));
+    experiments.add(new MobileBertExperiment(getApplicationContext(), expHandler));
 
     urlList = new ArrayList<String>();
     try {

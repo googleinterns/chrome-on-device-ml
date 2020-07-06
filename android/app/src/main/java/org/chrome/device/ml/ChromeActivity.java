@@ -48,7 +48,7 @@ import org.chrome.device.ml.service.RemoteServiceCallback;
 
 public class ChromeActivity extends AppCompatActivity implements ServiceConnection {
   private static final String TAG = "ChromeOnDeviceML";
-  private static final String [] MODELS = {"Bert", "MobileBert"};
+  private static final String [] MODELS = {"MobileBert"};
   private static final int MSG_TIME_UPDATE = 1;
 
   private Button classifyButton;
@@ -189,8 +189,9 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
   private void addItemsOnSpinner() {
     List<String> list = new ArrayList<String>();
-    list.add("Bert");
-    list.add("MobileBert");
+    for (int i=0; i<MODELS.length; i++) {
+      list.add(MODELS[i]);
+    }
     ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getApplicationContext(),
       android.R.layout.simple_spinner_item, list);
     dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -199,7 +200,6 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
   /** Handles button actions */
   private void buttonHandler() {
-
     textboxAppend("IPC\n");
     Log.v(TAG, "IPC");
 
