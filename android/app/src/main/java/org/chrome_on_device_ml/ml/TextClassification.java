@@ -194,7 +194,7 @@ public class TextClassification {
     for (int i = 0; i < labels.size(); i++) {
       pq.add(new Result("" + i, labels.get(i), output[0][i]));
     }
-    final ArrayList<Result> results = new ArrayList<>();
+    ArrayList<Result> results = new ArrayList<>();
     while (!pq.isEmpty()) {
       results.add(pq.poll());
     }
