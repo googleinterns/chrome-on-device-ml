@@ -22,11 +22,12 @@ import org.chrome_on_device_ml.ml.LoadDatasetClient;
 import org.chrome_on_device_ml.ml.QaAnswer;
 import org.chrome_on_device_ml.ml.QaClient;
 
+/** Bert model question/answer experiment */
 public class BertExperiment{
   private static final String TAG = "CDML_MobileBert";
   private final Context context;
   private Handler handler;
-  private Handler UIHandler;
+  private Handler activityHandler;
 
   private LoadDatasetClient datasetClient;
   private QaClient qaClient;
@@ -34,7 +35,7 @@ public class BertExperiment{
 
   public BertExperiment(Context context, Handler handler) {
     this.context = context;
-    this.UIHandler = handler;
+    this.activityHandler = handler;
 
     this.datasetClient = new LoadDatasetClient(this.context);
 
@@ -94,7 +95,7 @@ public class BertExperiment{
         Message doneMsg = new Message();
         doneMsg.what = 0;
         doneMsg.obj = "Evaluation Finished";
-        this.UIHandler.sendMessage(new Message());
+        this.activityHandler.sendMessage(new Message());
       }
     );
   }
