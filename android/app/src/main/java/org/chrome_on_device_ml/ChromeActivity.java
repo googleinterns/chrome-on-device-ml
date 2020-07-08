@@ -17,7 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
+//import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,7 +47,6 @@ public class ChromeActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    Log.v(TAG, "onCreate");
 
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
@@ -106,7 +105,7 @@ public class ChromeActivity extends AppCompatActivity {
     return super.onOptionsItemSelected(item);
   }
 
-  /** Hanldles messages from handler **/
+  /** Handles messages from handler **/
   private void messageHandler(Message msg) {
     double time = bert.getTime();
     showExperimentResult(time, 1);
@@ -139,8 +138,6 @@ public class ChromeActivity extends AppCompatActivity {
 
   /** Send input text to TextClassificationClass and show the classify messages **/
   private void classify(final String text) {
-    Log.d(TAG, "classify run");
-
     handler.post(
       () -> {
         // Run text classification with TF Lite.
