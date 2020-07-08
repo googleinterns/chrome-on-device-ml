@@ -31,7 +31,7 @@ public final class WordpieceTokenizer {
    * algorithm to perform tokenization using the given vocabulary. For example: input = "unaffable",
    * output = ["un", "##aff", "##able"].
    *
-   * @param text: A single token or whitespace separated tokens. This should have already been
+   * @param text A single token or whitespace separated tokens. This should have already been
    *     passed through `BasicTokenizer.
    * @return A list of wordpiece tokens.
    */
@@ -42,7 +42,6 @@ public final class WordpieceTokenizer {
 
     List<String> outputTokens = new ArrayList<>();
     for (String token : BasicTokenizer.whitespaceTokenize(text)) {
-
       if (token.length() > MAX_INPUTCHARS_PER_WORD) {
         outputTokens.add(UNKNOWN_TOKEN);
         continue;
@@ -72,7 +71,7 @@ public final class WordpieceTokenizer {
           break;
         }
 
-        // curSubStr is the longeset subword that can be found.
+        // curSubStr is the longest subword that can be found.
         subTokens.add(curSubStr);
 
         // Proceed to tokenize the resident string.
