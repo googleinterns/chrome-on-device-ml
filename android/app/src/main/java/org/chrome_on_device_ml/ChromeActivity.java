@@ -25,16 +25,12 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import java.text.DecimalFormat;
-import java.util.List;
 
-import org.chrome_on_device_ml.ml.TextClassification;
-import org.chrome_on_device_ml.ml.TextClassification.Result;
 import org.chrome_on_device_ml.experiments.BertExperiment;
 
 /** Chrome on-device ML main activity */
 public class ChromeActivity extends AppCompatActivity {
   private static final String TAG = "ChromeOnDeviceML";
-  private TextClassification client;
 
   private EditText inputEditText;
   private Button classifyButton;
@@ -51,7 +47,6 @@ public class ChromeActivity extends AppCompatActivity {
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
 
-    client = new TextClassification(getApplicationContext());
     handler = new Handler(Looper.getMainLooper()) {
       @Override
       public void handleMessage(Message msg) {
@@ -134,42 +129,5 @@ public class ChromeActivity extends AppCompatActivity {
         scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
       }
     );
-  }
-
-  // Send input text to TextClassificationClass and show the classify messages
-  private void classify(final String text) {
-    handler.post(
-      () -> {
-        // Run text classification with TF Lite.
-        List<Result> results = client.classify(text);
-
-        // Show classification result on screen
-        showResult(text, results);
-      }
-    );
-  }
-
-  // Show classification result on the screen
-  private void showResult(final String inputText, final List<Result> results) {
-    // Run on UI thread as we'll updating our app UI
-    runOnUiThread(
-      () -> {
-        String textToShow = "Input: " + inputText + "\nOutput:\n";
-        for (int i = 0; i < results.size(); i++) {
-          Result result = results.get(i);
-          textToShow +=
-                  String.format("    %s: %s\n", result.getTitle(), result.getConfidence());
-        }
-        textToShow += "---------\n";
-
-        // Append the result to the UI.
-        resultTextView.append(textToShow);
-
-        // Clear the input text.
-        inputEditText.getText().clear();
-
-        // Scroll to the bottom to show latest entry's classification result.
-        scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
-      });
   }
 }
