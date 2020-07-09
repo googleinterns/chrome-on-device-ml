@@ -17,7 +17,6 @@ import androidx.appcompat.widget.Toolbar;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-//import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,6 +31,7 @@ import org.chrome_on_device_ml.ml.TextClassification;
 import org.chrome_on_device_ml.ml.TextClassification.Result;
 import org.chrome_on_device_ml.experiments.BertExperiment;
 
+/** Chrome on-device ML main activity */
 public class ChromeActivity extends AppCompatActivity {
   private static final String TAG = "ChromeOnDeviceML";
   private TextClassification client;
@@ -105,13 +105,13 @@ public class ChromeActivity extends AppCompatActivity {
     return super.onOptionsItemSelected(item);
   }
 
-  /** Handles messages from handler **/
+  // Handles messages from handler
   private void messageHandler(Message msg) {
     double time = bert.getTime();
     showExperimentResult(time, 1);
   }
 
-  /** Handles button actions **/
+  // Handles button actions
   private void buttonHandler() {
     int contents = 1;
     String texttoShow = "Running contents: " + contents + "\n";
@@ -124,7 +124,7 @@ public class ChromeActivity extends AppCompatActivity {
     );
   }
 
-  /** Show experiment result in textbox **/
+  // Show experiment result in textbox
   private void showExperimentResult(double time, int numberOfContents) {
     runOnUiThread(
       () -> {
@@ -136,7 +136,7 @@ public class ChromeActivity extends AppCompatActivity {
     );
   }
 
-  /** Send input text to TextClassificationClass and show the classify messages **/
+  // Send input text to TextClassificationClass and show the classify messages
   private void classify(final String text) {
     handler.post(
       () -> {
@@ -149,7 +149,7 @@ public class ChromeActivity extends AppCompatActivity {
     );
   }
 
-  /** Show classification result on the screen. */
+  // Show classification result on the screen
   private void showResult(final String inputText, final List<Result> results) {
     // Run on UI thread as we'll updating our app UI
     runOnUiThread(
