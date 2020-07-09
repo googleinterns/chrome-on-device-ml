@@ -1,8 +1,7 @@
 ## Overview
-This is an Android app for emulating on-device machine learning in Google Chrome Android application. We use this app as an experimental setup to analyze delay and memory usage running ML on devicde in different use cases.
+This is an Android app for emulating on-device machine learning in Google Chrome Android application. We use this app as an experimental setup to analyze delay and memory usage of running ML on device in different use cases.
 
 ## Build the App using Android Studio
-
 ### Prerequisites
 - Install [Android Studio](https://developer.android.com/studio/index.html), following instruction on the website.
 - Andriod Studio 3.2 or later
@@ -10,7 +9,7 @@ This is an Android app for emulating on-device machine learning in Google Chrome
 
 ### Building
 - Open Android Studio, and from the Welcome screen, select Open an existing Android Studio project.
-- From the Open File or Project window that appears, navigate to and select the chrome-on-device-ml/android/app directory from wherever you cloned this GitHub repo.
+- From the Open File or Project window that appears, navigate to and select the ```chrome-on-device-ml/android``` directory from wherever you cloned this GitHub repo.
 - You may also need to install various platforms and tools according to error messages.
 
 ### Running
