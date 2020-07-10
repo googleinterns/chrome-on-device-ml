@@ -1,8 +1,8 @@
 **This is not an officially supported Google product.**
 
 # On-device ML for browsers of the future
-chowdhery@, mcrouse@, ryansturm@, <add name here>
-Last updated: June 29, 2020
+chowdhery@, mcrouse@, ryansturm@, mehrdadh@,
+Last updated: July 1, 2020
 
 ## Motivation
 The competitiveness of browsers in future will be determined by empowering the

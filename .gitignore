@@ -1,0 +1,14 @@
+#android
+*.iml
+.gradle
+android/local.properties
+android/.idea/
+android/build
+android/captures
+.externalNativeBuild
+.cxx
+android/app/build
+
+.DS_Store
+*.log
+*.tar.gz
