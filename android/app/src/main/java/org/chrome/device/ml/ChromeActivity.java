@@ -105,7 +105,6 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     }
   }
 
-
   @Override
   protected void onStart() {
     super.onStart();

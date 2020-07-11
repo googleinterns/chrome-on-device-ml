@@ -71,6 +71,7 @@ public final class WordpieceTokenizer {
           break;
         }
 
+
         // curSubStr is the longest subword that can be found.
         subTokens.add(curSubStr);
 
