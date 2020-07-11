@@ -15,11 +15,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.browser.customtabs.CustomTabsIntent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -35,14 +33,11 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
-
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.chrome.device.ml.customTab.CustomTabActivityHelper;
-import org.chrome.device.ml.experiments.Experiment;
 import org.chrome.device.ml.ml.TextClassification;
 import org.chrome.device.ml.ml.TextClassification.Result;
 import org.chrome.device.ml.service.MLService;
@@ -65,13 +60,13 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
   private TextClassification client;
 
-  /** ML Service */
+  // ML Service
   private RemoteService mService;
   private Intent mBindIntent;
   private Handler serviceHandler;
   private RemoteServiceCallback serviceCallback;
 
-  /** Custom Tab **/
+  // Custom Tab
   private ArrayList<String> urlList;
 
   @Override
@@ -164,21 +159,19 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    /** Inflate the menu; this adds items to the action bar if it is present. */
+    // Inflate the menu; this adds items to the action bar if it is present
     getMenuInflater().inflate(R.menu.menu_main, menu);
     return true;
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    /**
-     Handle action bar item clicks here. The action bar will
-     automatically handle clicks on the Home/Up button, so long
-     as you specify a parent activity in AndroidManifest.xml.
-    */
+    // Handle action bar item clicks here. The action bar will
+    // automatically handle clicks on the Home/Up button, so long
+    // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
 
-    /** noinspection SimplifiableIfStatement */
+    // noinspection SimplifiableIfStatement
     if (id == R.id.action_settings) {
       return true;
     }
@@ -212,7 +205,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     modelSpinner.setAdapter(dataAdapter);
   }
 
-  /** Handles button actions */
+  // Handles button actions
   private void buttonHandler() {
     textboxAppend("IPC\n");
     Log.v(TAG, "IPC");
@@ -225,7 +218,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     Log.v(TAG, "Service connected.");
     mService = RemoteService.Stub.asInterface(service);
 
-    /** Monitor service */
+    // Monitor service
     try{
       mService.registerCallback(serviceCallback);
     } catch (RemoteException e) {
@@ -239,7 +232,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     mService = null;
   }
 
-  /** Show experiment result in textbox */
+  // Show experiment result in textbox
   private void showExperimentResult(double time, int numberOfContents) {
     runOnUiThread(
       () -> {
@@ -250,7 +243,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     );
   }
 
-  /** Send input text to TextClassificationClass and show the classify messages */
+  // Send input text to TextClassificationClass and show the classify messages
   private void classify(final String text) {
     Log.d(TAG, "classify run");
 
@@ -266,7 +259,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     );
   }
 
-  /** Show classification result on the screen. */
+  // Show classification result on the screen
   private void showResult(final String inputText, final List<Result> results) {
     // Run on UI thread as we'll updating our app UI
     runOnUiThread(
@@ -282,17 +275,9 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
       });
   }
 
-  /** Append text to the textbox and scroll down the view. */
+  // Append text to the textbox and scroll down the view
   private void textboxAppend(String text) {
     resultTextView.append(text);
     scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
-  }
-
-  private void openCustomTab(String url) {
-    CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
-    intentBuilder.setShowTitle(true);
-
-    CustomTabActivityHelper.openCustomTab(
-            this, intentBuilder.build(), Uri.parse(url));
   }
 }
