@@ -29,6 +29,7 @@ import org.chrome.device.ml.experiments.MobileBertExperiment;
 import org.chrome.device.ml.service.RemoteService;
 import org.chrome.device.ml.service.RemoteServiceCallback;
 
+/** Runs ML task on a service */
 public class MLService extends Service {
   private final static String TAG = "MLService";
   private static final int MSG_REPORT = 1;
@@ -138,6 +139,7 @@ public class MLService extends Service {
     mHandler.sendEmptyMessage(MSG_REPORT);
   }
 
+  // Run experiment
   private void experimentRun() {
     int contents = 1;
     String texttoShow = "Running contents: " + contents + "\n";

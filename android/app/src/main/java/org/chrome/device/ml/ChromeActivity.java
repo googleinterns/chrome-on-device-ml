@@ -42,6 +42,7 @@ import org.chrome.device.ml.service.MLService;
 import org.chrome.device.ml.service.RemoteService;
 import org.chrome.device.ml.service.RemoteServiceCallback;
 
+/** Chrome on-device ML main activity */
 public class ChromeActivity extends AppCompatActivity implements ServiceConnection {
   private static final String TAG = "ChromeOnDeviceML";
   private static final String [] MODELS = {"MobileBert"};
@@ -113,13 +114,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     };
 
     serviceCallback = new RemoteServiceCallback.Stub() {
-      /**
-       * This is called by the remote service regularly to tell us about
-       * new values.  Note that IPC calls are dispatched through a thread
-       * pool running in each process, so the code executing here will
-       * NOT be running in our main thread like most other things -- so,
-       * to update the UI, we need to use a Handler to hop over there.
-       */
+      // This is called by the remote service regularly to tell us about new values
       public void timeChanged(double time) {
         Message msg = new Message();
         msg.what = MSG_TIME_UPDATE;
