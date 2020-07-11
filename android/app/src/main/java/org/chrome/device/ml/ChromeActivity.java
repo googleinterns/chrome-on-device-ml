@@ -38,8 +38,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.chrome.device.ml.ml.TextClassification;
-import org.chrome.device.ml.ml.TextClassification.Result;
 import org.chrome.device.ml.service.MLService;
 import org.chrome.device.ml.service.RemoteService;
 import org.chrome.device.ml.service.RemoteServiceCallback;
@@ -51,14 +49,10 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
   private static final int MSG_TIME_UPDATE = 1;
 
   private Button classifyButton;
-  private Handler mhandler;
-  private Handler tabHandler;
   public TextView resultTextView;
   private ScrollView scrollView;
   private Spinner modelSpinner;
   private int spinnerSelection;
-
-  private TextClassification client;
 
   // ML Service
   private RemoteService mService;
@@ -77,10 +71,6 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
-
-    client = new TextClassification(getApplicationContext());
-    mhandler = new Handler(Looper.getMainLooper());
-    tabHandler = new Handler();
 
     modelSpinner = findViewById(R.id.modelSpinner);
     classifyButton = findViewById(R.id.button);
@@ -240,38 +230,6 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
         textboxAppend(textToShow);
       }
     );
-  }
-
-  // Send input text to TextClassificationClass and show the classify messages
-  private void classify(final String text) {
-    Log.d(TAG, "classify run");
-
-    //TODO: move this to service
-    mhandler.post(
-      () -> {
-        // Run text classification with TF Lite.
-        List<Result> results = client.classify(text);
-
-        // Show classification result on screen
-        showResult(text, results);
-      }
-    );
-  }
-
-  // Show classification result on the screen
-  private void showResult(final String inputText, final List<Result> results) {
-    // Run on UI thread as we'll updating our app UI
-    runOnUiThread(
-      () -> {
-        String textToShow = "Input: " + inputText + "\nOutput:\n";
-        for (int i = 0; i < results.size(); i++) {
-          Result result = results.get(i);
-          textToShow +=
-                  String.format("    %s: %s\n", result.getTitle(), result.getConfidence());
-        }
-        textToShow += "---------\n";
-        textboxAppend(textToShow);
-      });
   }
 
   // Append text to the textbox and scroll down the view

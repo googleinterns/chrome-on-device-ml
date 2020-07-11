@@ -39,11 +39,7 @@ public class MLService extends Service {
   private double expTime;
   private int modelSelection;
 
-  /**
-   * This is a list of callbacks that have been registered with the
-   * service.  Note that this is package scoped (instead of private) so
-   * that it can be accessed more efficiently from inner classes.
-   */
+  // This is a list of callbacks that have been registered with the service.
   final RemoteCallbackList<RemoteServiceCallback> mCallbacks
           = new RemoteCallbackList<RemoteServiceCallback>();
 
@@ -52,23 +48,19 @@ public class MLService extends Service {
     public int getPid(){
       return Process.myPid();
     }
-
     @Override
     public void basicTypes(int anInt, long aLong, boolean aBoolean,
                            float aFloat, double aDouble, String aString) {
     }
-
     @Override
     public void taskStart() throws RemoteException {
       experimentRun();
     }
-
     @Override
     public void registerCallback(RemoteServiceCallback cb) throws RemoteException {
       Log.v(TAG, "Service callback register.");
       if (cb != null) mCallbacks.register(cb);
     }
-
     @Override
     public void unregisterCallback(RemoteServiceCallback cb) throws RemoteException {
       Log.v(TAG, "Serivce callback unregister.");
@@ -113,7 +105,7 @@ public class MLService extends Service {
       ((Experiment)experiments.get(i)).close();
     }
 
-    /** Remove the next pending message to increment the counter, stoppin the increment loop. **/
+    // Remove the next pending message to increment the counter, stoppin the increment loop
     mHandler.removeMessages(MSG_REPORT);
   }
 
@@ -122,7 +114,7 @@ public class MLService extends Service {
       Log.v(TAG, "msg.what: " + msg.what);
       switch (msg.what) {
         case MSG_REPORT: {
-          /** Broadcast to all clients the new value. **/
+          // Broadcast to all clients the new value
           final int N = mCallbacks.beginBroadcast();
           for (int i=0; i<N; i++) {
             try {
@@ -139,7 +131,7 @@ public class MLService extends Service {
     }
   };
 
-  /** Hanldle messages from experiments */
+  // Handle messages from experiments
   private void experimentMessageHandler(Message msg) {
     expTime = ((Experiment)experiments.get(modelSelection)).getTime();
     Log.v(TAG, "Time: + " + expTime);

@@ -11,6 +11,7 @@ limitations under the License.
 ==============================================================================*/
 package org.chrome.device.ml.experiments;
 
+/** Experiment Interface */
 public interface Experiment {
   public void initialize();
   public void close();

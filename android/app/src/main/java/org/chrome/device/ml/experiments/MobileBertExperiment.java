@@ -22,6 +22,7 @@ import org.chrome.device.ml.ml.LoadDatasetClient;
 import org.chrome.device.ml.ml.QaAnswer;
 import org.chrome.device.ml.ml.QaClient;
 
+/** Mobilebert Question/Answer Experiment */
 public class MobileBertExperiment implements Experiment {
   private static final String TAG = "MobileBertExperiment";
   private static final String MODEL_PATH = "bert_model.tflite";
@@ -63,27 +64,27 @@ public class MobileBertExperiment implements Experiment {
             });
   }
 
-  /** Evaluates Bert model with contents and questions. */
+  // Evaluates Bert model with contents and questions
   public void evaluate(int numberOfContents) {
     timing.clear();
     int contentsRun = Math.min(numberOfContents, datasetClient.getNumberOfContents());
     handler.post(
             () -> {
               for (int i = 0; i < contentsRun; i++) {
-                /** fetch a content. */
+                // fetch a content
                 final String content = datasetClient.getContent(i);
                 String[] question_set = datasetClient.getQuestions(i);
 
                 for (int j = 0; j < question_set.length; j++) {
-                  /** fetch a question. */
+                  // fetch a question
                   String question = question_set[j];
 
-                  /** Add question mark to match with the dataset. */
+                  //Add question mark to match with the dataset
                   if (!question.endsWith("?")) {
                     question += '?';
                   }
 
-                  /** Run model and store timing. */
+                  // Run model and store timing
                   final String questionToAsk = question;
                   long beforeTime = System.currentTimeMillis();
                   final List<QaAnswer> answers = qaClient.predict(questionToAsk, content);
@@ -92,7 +93,7 @@ public class MobileBertExperiment implements Experiment {
                   timing.add(contentTime);
                 }
               }
-              /** Send message to UI thread. */
+              // Send message to UI thread
               Message doneMsg = new Message();
               doneMsg.what = 0;
               doneMsg.obj = "Evaluation Finished";

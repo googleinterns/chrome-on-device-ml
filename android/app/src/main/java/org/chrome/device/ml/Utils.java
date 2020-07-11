@@ -12,13 +12,13 @@ limitations under the License.
 package org.chrome.device.ml;
 
 import android.content.res.AssetManager;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+/** Utils functions */
 public class Utils {
 
   public static ArrayList<String> getURLList(AssetManager assetManager, String path) throws IOException {
