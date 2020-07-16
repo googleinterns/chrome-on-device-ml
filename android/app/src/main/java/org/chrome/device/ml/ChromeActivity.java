@@ -45,7 +45,7 @@ import org.chrome.device.ml.service.RemoteServiceCallback;
 /** Chrome on-device ML main activity */
 public class ChromeActivity extends AppCompatActivity implements ServiceConnection {
   private static final String TAG = "ChromeOnDeviceML";
-  private static final String [] MODELS = {"MobileBert"};
+  private static final String[] MODELS = {"MobileBert"};
   private static final String URL_PATH = "url_list.txt";
   private static final int MSG_TIME_UPDATE = 1;
 
