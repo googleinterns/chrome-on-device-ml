@@ -68,17 +68,13 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    Log.v(TAG, "onCreate");
 
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
 
     modelSpinner = findViewById(R.id.modelSpinner);
     classifyButton = findViewById(R.id.button);
-    classifyButton.setOnClickListener(
-            (View v) -> {
-              buttonHandler();
-            });
+    classifyButton.setOnClickListener(this::buttonHandler);
     scrollView = findViewById(R.id.scroll_view);
     resultTextView = findViewById(R.id.result_text_view);
 
@@ -114,7 +110,6 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
     };
 
     serviceCallback = new RemoteServiceCallback.Stub() {
-      // This is called by the remote service regularly to tell us about new values
       public void timeChanged(double time) {
         Message msg = new Message();
         msg.what = MSG_TIME_UPDATE;
@@ -133,7 +128,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
       try {
         mService.unregisterCallback(serviceCallback);
       } catch (RemoteException e) {
-        Log.e(TAG, "Error unregister callback");
+        Log.e(TAG, e.getMessage());
       }
     }
     unbindService(this);
@@ -150,16 +145,10 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
-
-    // noinspection SimplifiableIfStatement
     if (id == R.id.action_settings) {
       return true;
     }
-
     return super.onOptionsItemSelected(item);
   }
 
@@ -180,8 +169,8 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
   private void addItemsOnSpinner() {
     List<String> list = new ArrayList<String>();
-    for (int i=0; i<MODELS.length; i++) {
-      list.add(MODELS[i]);
+    for (String model: MODELS) {
+      list.add(model);
     }
     ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getApplicationContext(),
       android.R.layout.simple_spinner_item, list);
@@ -190,10 +179,8 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
   }
 
   // Handles button actions
-  private void buttonHandler() {
+  private void buttonHandler(View v) {
     textboxAppend("IPC\n");
-    Log.v(TAG, "IPC");
-
     this.startService(mBindIntent);
   }
 
@@ -201,12 +188,11 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
   public void onServiceConnected(ComponentName componentName, IBinder service) {
     Log.v(TAG, "Service connected.");
     mService = RemoteService.Stub.asInterface(service);
-
     // Monitor service
     try{
       mService.registerCallback(serviceCallback);
     } catch (RemoteException e) {
-      Log.e(TAG, e.getStackTrace().toString());
+      Log.e(TAG, "Registering callback\n" + e.getMessage());
     }
   }
 

@@ -21,6 +21,12 @@ import java.util.ArrayList;
 /** Utils functions */
 public class Utils {
 
+  /**
+   * Reads URLs from a file and returns them in an Arraylist
+   * @param assetManager Application asset manager
+   * @param path URL file path
+   * @return Arraylist of String URLs
+   */
   public static ArrayList<String> getURLList(AssetManager assetManager, String path) throws IOException {
     ArrayList<String> urlList = new ArrayList<String>();
     try (InputStream ins = assetManager.open(path);

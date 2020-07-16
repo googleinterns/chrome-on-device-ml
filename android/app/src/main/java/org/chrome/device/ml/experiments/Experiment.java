@@ -13,8 +13,16 @@ package org.chrome.device.ml.experiments;
 
 /** Experiment Interface */
 public interface Experiment {
+
+  // Runs initialization tasks of experiment
   public void initialize();
+
+  // Close tasks and removes object of experiment
   public void close();
+
+  // Evaluates the experiment
   public void evaluate(int numberOfContents);
+
+  // returns runtime of experiment
   public double getTime();
 }

@@ -71,15 +71,15 @@ public class MobileBertExperiment implements Experiment {
     handler.post(
             () -> {
               for (int i = 0; i < contentsRun; i++) {
-                // fetch a content
+                // Fetch a content
                 final String content = datasetClient.getContent(i);
                 String[] question_set = datasetClient.getQuestions(i);
 
                 for (int j = 0; j < question_set.length; j++) {
-                  // fetch a question
+                  // Ffetch a question
                   String question = question_set[j];
 
-                  //Add question mark to match with the dataset
+                  // Add question mark to match with the dataset
                   if (!question.endsWith("?")) {
                     question += '?';
                   }

@@ -41,7 +41,7 @@ public class MLService extends Service {
   private int modelSelection;
 
   // This is a list of callbacks that have been registered with the service.
-  final RemoteCallbackList<RemoteServiceCallback> mCallbacks
+  private final RemoteCallbackList<RemoteServiceCallback> mCallbacks
           = new RemoteCallbackList<RemoteServiceCallback>();
 
   private final RemoteService.Stub mbinder = new RemoteService.Stub() {
@@ -49,19 +49,23 @@ public class MLService extends Service {
     public int getPid(){
       return Process.myPid();
     }
+
     @Override
     public void basicTypes(int anInt, long aLong, boolean aBoolean,
                            float aFloat, double aDouble, String aString) {
     }
+
     @Override
     public void taskStart() throws RemoteException {
       experimentRun();
     }
+
     @Override
     public void registerCallback(RemoteServiceCallback cb) throws RemoteException {
       Log.v(TAG, "Service callback register.");
       if (cb != null) mCallbacks.register(cb);
     }
+
     @Override
     public void unregisterCallback(RemoteServiceCallback cb) throws RemoteException {
       Log.v(TAG, "Serivce callback unregister.");
