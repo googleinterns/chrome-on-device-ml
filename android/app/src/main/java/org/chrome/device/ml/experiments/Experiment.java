@@ -11,18 +11,20 @@ limitations under the License.
 ==============================================================================*/
 package org.chrome.device.ml.experiments;
 
-/** Experiment Interface */
+/**
+ * Experiment Interface
+ */
 public interface Experiment {
 
-  // Runs initialization tasks of experiment
-  public void initialize();
+    // Runs initialization tasks of experiment
+    public void initialize();
 
-  // Close tasks and removes object of experiment
-  public void close();
+    // Close tasks and removes object of experiment
+    public void close();
 
-  // Evaluates the experiment
-  public void evaluate(int numberOfContents);
+    // Evaluates the experiment
+    public void evaluate(int numberOfContents);
 
-  // returns runtime of experiment
-  public double getTime();
+    // returns runtime of experiment
+    public double getTime();
 }

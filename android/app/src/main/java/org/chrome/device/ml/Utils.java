@@ -12,29 +12,34 @@ limitations under the License.
 package org.chrome.device.ml;
 
 import android.content.res.AssetManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-/** Utils functions */
+/**
+ * Utils functions
+ */
 public class Utils {
 
-  /**
-   * Reads URLs from a file and returns them in an Arraylist
-   * @param assetManager Application asset manager
-   * @param path URL file path
-   * @return Arraylist of String URLs
-   */
-  public static ArrayList<String> getURLList(AssetManager assetManager, String path) throws IOException {
-    ArrayList<String> urlList = new ArrayList<String>();
-    try (InputStream ins = assetManager.open(path);
-         BufferedReader reader = new BufferedReader(new InputStreamReader(ins))) {
-      while (reader.ready()) {
-        urlList.add(reader.readLine());
-      }
+    /**
+     * Reads URLs from a file and returns them in an Arraylist
+     *
+     * @param assetManager Application asset manager
+     * @param path         URL file path
+     * @return Arraylist of String URLs
+     */
+    public static ArrayList<String> getURLList(AssetManager assetManager, String path)
+            throws IOException {
+        ArrayList<String> urlList = new ArrayList<String>();
+        try (InputStream ins = assetManager.open(path);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(ins))) {
+            while (reader.ready()) {
+                urlList.add(reader.readLine());
+            }
+        }
+        return urlList;
     }
-    return urlList;
-  }
 }
