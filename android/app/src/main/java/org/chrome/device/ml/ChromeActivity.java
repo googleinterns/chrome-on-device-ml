@@ -138,7 +138,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
             }
         }
         unbindService(this);
-        stopService(new Intent(ChromeActivity.this, MLService.class))
+        stopService(new Intent(ChromeActivity.this, MLService.class));
     }
 
     @Override

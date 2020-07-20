@@ -19,9 +19,9 @@ import android.os.Message;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.chrome.device.ml.ml.LoadDatasetClient;
-import org.chrome.device.ml.ml.QaAnswer;
-import org.chrome.device.ml.ml.QaClient;
+import org.chrome.device.ml.thirdparty.ml.LoadDatasetClient;
+import org.chrome.device.ml.thirdparty.ml.QaAnswer;
+import org.chrome.device.ml.thirdparty.ml.QaClient;
 
 /**
  * Mobilebert Question/Answer Experiment
