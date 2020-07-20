@@ -138,8 +138,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
             }
         }
         unbindService(this);
-        stopService(new Intent(ChromeActivity.this, MLService.class));
-
+        stopService(new Intent(ChromeActivity.this, MLService.class))
     }
 
     @Override
@@ -158,7 +157,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
         return super.onOptionsItemSelected(item);
     }
 
-    public void addListenerOnSpinnerItemSelection() {
+    private void addListenerOnSpinnerItemSelection() {
         modelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {

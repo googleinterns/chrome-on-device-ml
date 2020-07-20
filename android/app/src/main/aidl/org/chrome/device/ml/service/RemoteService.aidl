@@ -21,12 +21,12 @@ interface RemoteService {
   void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
           double aDouble, String aString);
 
-  /** start service task **/
+  /** Starts the service task. **/
   void taskStart();
 
-  /** Register callback **/
+  /** Registers callback. **/
   void registerCallback(RemoteServiceCallback cb);
 
-  /** Remove a previously registered callback interface. **/
+  /** Removes a previously registered callback interface. **/
   void unregisterCallback(RemoteServiceCallback cb);
 }

@@ -25,6 +25,6 @@ public interface Experiment {
     // Evaluates the experiment
     public void evaluate(int numberOfContents);
 
-    // returns runtime of experiment
+    // Returns runtime of experiment
     public double getTime();
 }

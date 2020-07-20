@@ -79,7 +79,7 @@ public class MobileBertExperiment implements Experiment {
                         String[] question_set = datasetClient.getQuestions(i);
 
                         for (int j = 0; j < question_set.length; j++) {
-                            // Ffetch a question
+                            // Fetch a question
                             String question = question_set[j];
 
                             // Add question mark to match with the dataset

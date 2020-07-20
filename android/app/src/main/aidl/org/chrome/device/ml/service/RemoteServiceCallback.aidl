@@ -13,6 +13,6 @@ package org.chrome.device.ml.service;
 
 interface RemoteServiceCallback {
 
-  /* Called when the service has a new value for you. */
+  /* Called when the service has a new value. */
   void timeChanged(double time);
 }
