@@ -15,7 +15,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-
 import java.util.ArrayList;
 import java.util.List;
 

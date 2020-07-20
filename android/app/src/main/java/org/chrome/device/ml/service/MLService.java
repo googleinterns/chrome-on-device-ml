@@ -20,12 +20,10 @@ import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
-
 import androidx.annotation.Nullable;
-
 import android.os.Process;
-
 import java.util.ArrayList;
+import java.util.List;
 
 import org.chrome.device.ml.experiments.MobileBertExperiment;
 
@@ -38,7 +36,7 @@ public class MLService extends Service {
     private static final int MODELS_SIZE = 1;
 
     private Handler expHandler;
-    private ArrayList experiments;
+    private List experiments;
     private double expTime;
     private int modelSelection;
 
