@@ -36,7 +36,7 @@ public class MobileBertExperiment implements Experiment {
 
     private LoadDatasetClient datasetClient;
     private QaClient qaClient;
-    private ArrayList<Double> timing;
+    private List<Double> timing;
 
     public MobileBertExperiment(Context context, Handler handler) {
         this.context = context;
@@ -67,7 +67,7 @@ public class MobileBertExperiment implements Experiment {
                 });
     }
 
-    // Evaluates Bert model with contents and questions
+    // Evaluates Bert model with contents and questions and stores timing in a list.
     public void evaluate(int numberOfContents) {
         timing.clear();
         int contentsRun = Math.min(numberOfContents, datasetClient.getNumberOfContents());
@@ -105,6 +105,7 @@ public class MobileBertExperiment implements Experiment {
         );
     }
 
+    // Returns runtime of experiment. Should be called after evaluation is finished.
     public double getTime() {
         double time = 0;
         for (Double item : timing) {
