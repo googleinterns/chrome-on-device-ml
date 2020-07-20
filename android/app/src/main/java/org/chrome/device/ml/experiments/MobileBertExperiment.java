@@ -26,7 +26,7 @@ import org.chrome.device.ml.thirdparty.ml.QaClient;
 /**
  * Mobilebert Question/Answer Experiment
  */
-public class MobileBertExperiment implements Experiment {
+public class MobileBertExperiment {
     private static final String TAG = "MobileBertExperiment";
     private static final String MODEL_PATH = "bert_model.tflite";
 

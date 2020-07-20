@@ -27,10 +27,7 @@ import android.os.Process;
 
 import java.util.ArrayList;
 
-import org.chrome.device.ml.experiments.Experiment;
 import org.chrome.device.ml.experiments.MobileBertExperiment;
-import org.chrome.device.ml.service.RemoteService;
-import org.chrome.device.ml.service.RemoteServiceCallback;
 
 /**
  * Runs ML task on a service
@@ -92,7 +89,7 @@ public class MLService extends Service {
         experiments = new ArrayList();
         experiments.add(new MobileBertExperiment(getApplicationContext(), expHandler));
         for (int i = 0; i < MODELS_SIZE; i++) {
-            ((Experiment) experiments.get(i)).initialize();
+            ((MobileBertExperiment) experiments.get(i)).initialize();
         }
     }
 
@@ -112,7 +109,7 @@ public class MLService extends Service {
     @Override
     public void onDestroy() {
         for (int i = 0; i < MODELS_SIZE; i++) {
-            ((Experiment) experiments.get(i)).close();
+            ((MobileBertExperiment) experiments.get(i)).close();
         }
 
         // Remove the next pending message to increment the counter, stoppin the increment loop
@@ -145,7 +142,7 @@ public class MLService extends Service {
 
     // Handle messages from experiments
     private void experimentMessageHandler(Message msg) {
-        expTime = ((Experiment) experiments.get(modelSelection)).getTime();
+        expTime = ((MobileBertExperiment) experiments.get(modelSelection)).getTime();
         Log.v(TAG, "Time: + " + expTime);
         mHandler.sendEmptyMessage(MSG_REPORT);
     }
@@ -159,7 +156,7 @@ public class MLService extends Service {
 
         expHandler.post(
                 () -> {
-                    ((Experiment) experiments.get(modelSelection)).evaluate(contents);
+                    ((MobileBertExperiment) experiments.get(modelSelection)).evaluate(contents);
                 }
         );
     }
