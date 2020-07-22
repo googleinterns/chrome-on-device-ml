@@ -67,7 +67,7 @@ public class MobileBertExperiment {
     }
 
     // Evaluates Bert model with contents and questions and stores timing in a list.
-    public void evaluate(int numberOfContents) {
+    public synchronized void evaluate(int numberOfContents) {
         timing.clear();
         int contentsRun = Math.min(numberOfContents, datasetClient.getNumberOfContents());
         handler.post(
@@ -105,7 +105,7 @@ public class MobileBertExperiment {
     }
 
     // Returns runtime of experiment. Should be called after evaluation is finished.
-    public double getTime() {
+    public synchronized double getTime() {
         double time = 0;
         for (Double item : timing) {
             time += item;

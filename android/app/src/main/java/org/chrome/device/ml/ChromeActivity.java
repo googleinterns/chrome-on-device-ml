@@ -181,7 +181,7 @@ public class ChromeActivity extends AppCompatActivity implements ServiceConnecti
 
     // Handles button actions
     private void buttonHandler(View v) {
-        textboxAppend("IPC\n");
+        textboxAppend("Running...\n");
         this.startService(mBindIntent);
     }
 
