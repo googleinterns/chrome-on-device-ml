@@ -5,14 +5,13 @@ android {
     buildToolsVersion "30.0.0"
 
     defaultConfig {
-        applicationId "org.chrome_on_device_ml"
+        applicationId "org.chrome.device.ml"
         minSdkVersion 19
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -23,7 +22,6 @@ android {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
     }
-
     aaptOptions {
         noCompress 'tflite'
     }
@@ -41,6 +39,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.3.0'
     implementation 'androidx.navigation:navigation-ui:2.3.0'
     implementation 'com.android.support:support-annotations:28.0.0'
+    implementation "androidx.browser:browser:1.2.0"
 
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.google.guava:guava:28.1-android'

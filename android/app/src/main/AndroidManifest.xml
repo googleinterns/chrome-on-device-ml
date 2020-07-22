@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.chrome_on_device_ml">
+    package="org.chrome.device.ml">
 
     <application
         android:allowBackup="true"
@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ChromeActivity"
+            android:name="org.chrome.device.ml.ChromeActivity"
             android:label="@string/ch_ml_app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -19,6 +19,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="org.chrome.device.ml.service.MLService"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/ml_service_label"
+            android:process="@string/ml_service_process"></service>
+
     </application>
 
 </manifest>
